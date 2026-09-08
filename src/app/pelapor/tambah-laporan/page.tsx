@@ -39,7 +39,6 @@ function TambahLaporanContent() {
   const [mediaTypes, setMediaTypes] = useState<any[]>([]);
   const [selectedMediaType, setSelectedMediaType] = useState("");
   const [mediaName, setMediaName] = useState("");
-  const [draftReportId, setDraftReportId] = useState<number | null>(null);
 
   // State Data Tahap 2
   const [questions, setQuestions] = useState<any[]>([]);
@@ -63,7 +62,7 @@ function TambahLaporanContent() {
   }, []);
 
   // ---------------------------------------------------------
-  // 1. TAHAP 1: BUAT DRAFT & FETCH PERTANYAAN
+  // 1. TAHAP 1: FETCH PERTANYAAN
   // ---------------------------------------------------------
   const startReport = async (mediaTypeId: string, reportMediaName: string) => {
     if (!mediaTypeId || !reportMediaName.trim()) {
@@ -85,35 +84,8 @@ function TambahLaporanContent() {
       const qData = await qRes.json();
       setQuestions(qData);
 
-      // B. Cari ID pertanyaan "Nama Media" untuk dikirim pertama kali
+      // Simpan nama media secara lokal sampai laporan benar-benar disubmit.
       const namaMediaQ = qData.find((q: any) => q.question_text.toLowerCase().includes("nama media"));
-      const initialAnswersPayload = namaMediaQ 
-        ? [{ question_id: namaMediaQ.id, answer_value: reportMediaName.trim(), answer_type: "text" }] 
-        : [];
-
-      // C. Buat Draft Laporan ke Backend
-      const draftRes = await fetch(`${baseURL}/reports`, {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          media_type_id: Number(mediaTypeId),
-          submit: false,
-          answers: initialAnswersPayload
-        })
-      });
-
-      if (!draftRes.ok) {
-        const errData = await draftRes.json();
-        throw new Error(errData.message || "Gagal membuat draft laporan");
-      }
-
-      const draftData = await draftRes.json();
-      setDraftReportId(draftData.report.id);
-
-      // D. Simpan jawaban "Nama Media" ke local state
       if (namaMediaQ) {
         setAnswers({ [namaMediaQ.id]: { value: reportMediaName.trim(), type: "text" } });
       }
@@ -155,16 +127,14 @@ function TambahLaporanContent() {
   };
 
   const handleFileUpload = async (qId: number, file: File) => {
-    if (!draftReportId) return;
-    
     setUploadingFiles(prev => ({ ...prev, [qId]: true }));
     const token = getCookie("token");
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      // Upload file spesifik untuk draft dan pertanyaan ini
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${draftReportId}/upload/${qId}`, {
+      // Upload file sebelum laporan dibuat; path-nya dikirim saat submit final.
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/upload/${qId}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData
@@ -172,10 +142,9 @@ function TambahLaporanContent() {
 
       if (res.ok) {
         const data = await res.json();
-        // Simpan string path dari backend ke state answer_value
         setAnswers(prev => ({ 
-          ...prev, 
-          [qId]: { value: data.answer?.answer_value || data.answer_value || data.path || data.url, type: "file", fileName: file.name } 
+          ...prev,
+          [qId]: { value: data.file_path, type: "file", fileName: file.name }
         }));
       } else {
         const err = await res.json();
@@ -198,15 +167,13 @@ function TambahLaporanContent() {
     setSubmitErrorMessage("");
 
     const unansweredMandatory = questions.filter(
-      (q) => requiredQuestionIds.has(q.id) && (!answers[q.id] || !answers[q.id].value?.trim())
+      (q) => (q.is_mandatory || requiredQuestionIds.has(q.id)) && (!answers[q.id] || !answers[q.id].value?.trim())
     );
     
     if (unansweredMandatory.length > 0) {
       setSubmitNotification("incomplete");
       return;
     }
-
-    if (!draftReportId) return;
 
     setIsSubmitting(true);
     const token = getCookie("token");
@@ -220,22 +187,18 @@ function TambahLaporanContent() {
     }));
 
     try {
-      // 1. Update (PUT) seluruh jawaban ke Draft
-      const putRes = await fetch(`${baseURL}/reports/${draftReportId}`, {
-        method: "PUT",
+      // Buat dan submit laporan dalam satu request setelah form lengkap.
+      const submitRes = await fetch(`${baseURL}/reports`, {
+        method: "POST",
         headers: { 
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ answers: formattedAnswers })
-      });
-
-      if (!putRes.ok) throw new Error("Gagal menyimpan update jawaban");
-
-      // 2. Tembak Endpoint Submit Final
-      const submitRes = await fetch(`${baseURL}/reports/${draftReportId}/submit`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}` }
+        body: JSON.stringify({
+          media_type_id: Number(selectedMediaType),
+          submit: true,
+          answers: formattedAnswers
+        })
       });
 
       if (submitRes.ok) {
