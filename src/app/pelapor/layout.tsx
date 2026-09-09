@@ -96,7 +96,7 @@ export default function PelaporLayout({
   const getPageTitle = () => {
     if (pathname === "/pelapor") return "Dashboard";
     if (pathname.includes("/pelapor/profil")) return "Profil Akun";
-    if (pathname.includes("/pelapor/tambah-laporan")) return "Tambah Laporan";
+    if (pathname.includes("/pelapor/tambah-laporan")) return "Tambah Proposal";
     return "Sistem SIFOKAM";
   };
 

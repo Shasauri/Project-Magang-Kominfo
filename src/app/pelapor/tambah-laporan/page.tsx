@@ -20,6 +20,16 @@ const determineAnswerType = (questionText: string) => {
   return "text";
 };
 
+const isNegativeAnswer = (value: string | undefined) => {
+  if (!value) return false;
+  return value.trim().toLowerCase().startsWith("tidak");
+};
+
+const isSkippedWhenPreviousAnswerIsNo = (question: any) => {
+  const answerType = determineAnswerType(question.question_text);
+  return answerType === "file" || answerType === "url";
+};
+
 const requiredQuestionIds = new Set([9, 15]);
 
 function TambahLaporanContent() {
@@ -39,6 +49,7 @@ function TambahLaporanContent() {
   const [mediaTypes, setMediaTypes] = useState<any[]>([]);
   const [selectedMediaType, setSelectedMediaType] = useState("");
   const [mediaName, setMediaName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
 
   // State Data Tahap 2
   const [questions, setQuestions] = useState<any[]>([]);
@@ -64,9 +75,9 @@ function TambahLaporanContent() {
   // ---------------------------------------------------------
   // 1. TAHAP 1: FETCH PERTANYAAN
   // ---------------------------------------------------------
-  const startReport = async (mediaTypeId: string, reportMediaName: string) => {
-    if (!mediaTypeId || !reportMediaName.trim()) {
-      alert("Harap pilih jenis media dan isi nama media.");
+  const startReport = async (mediaTypeId: string, reportMediaName: string, reportContactNumber: string) => {
+    if (!mediaTypeId || !reportMediaName.trim() || !reportContactNumber.trim()) {
+      alert("Harap lengkapi jenis media, nama media, dan nomor yang dapat dihubungi.");
       return;
     }
 
@@ -86,9 +97,16 @@ function TambahLaporanContent() {
 
       // Simpan nama media secara lokal sampai laporan benar-benar disubmit.
       const namaMediaQ = qData.find((q: any) => q.question_text.toLowerCase().includes("nama media"));
-      if (namaMediaQ) {
-        setAnswers({ [namaMediaQ.id]: { value: reportMediaName.trim(), type: "text" } });
-      }
+      const contactQ = qData.find((q: any) => {
+        const text = q.question_text.toLowerCase();
+        return text.includes("whatsapp") || text.includes("kontak");
+      });
+      const initialAnswers: { [key: number]: { value: string, type: string } } = {};
+
+      if (namaMediaQ) initialAnswers[namaMediaQ.id] = { value: reportMediaName.trim(), type: "text" };
+      if (contactQ) initialAnswers[contactQ.id] = { value: reportContactNumber.trim(), type: "text" };
+
+      setAnswers(initialAnswers);
       
       setStep(2);
     } catch (error: any) {
@@ -100,21 +118,23 @@ function TambahLaporanContent() {
   };
 
   const handleNextStep = () => {
-    startReport(selectedMediaType, mediaName);
+    startReport(selectedMediaType, mediaName, contactNumber);
   };
 
   useEffect(() => {
     const mediaTypeId = searchParams.get("media_type_id");
     const reportMediaName = searchParams.get("media_name");
-    const queryKey = mediaTypeId && reportMediaName
-      ? `${mediaTypeId}:${reportMediaName}`
+    const reportContactNumber = searchParams.get("contact_number");
+    const queryKey = mediaTypeId && reportMediaName && reportContactNumber
+      ? `${mediaTypeId}:${reportMediaName}:${reportContactNumber}`
       : null;
 
-    if (mediaTypeId && reportMediaName && step === 1 && startedQueryRef.current !== queryKey) {
+    if (mediaTypeId && reportMediaName && reportContactNumber && step === 1 && startedQueryRef.current !== queryKey) {
       startedQueryRef.current = queryKey;
       setSelectedMediaType(mediaTypeId);
       setMediaName(reportMediaName);
-      startReport(mediaTypeId, reportMediaName);
+      setContactNumber(reportContactNumber);
+      startReport(mediaTypeId, reportMediaName, reportContactNumber);
     }
   }, [searchParams, step]);
 
@@ -123,7 +143,21 @@ function TambahLaporanContent() {
   // ---------------------------------------------------------
   const handleTextChange = (qId: number, value: string, questionText: string) => {
     const type = determineAnswerType(questionText);
-    setAnswers(prev => ({ ...prev, [qId]: { value, type } }));
+    setAnswers(prev => {
+      const nextAnswers = { ...prev, [qId]: { value, type } };
+      const questionIndex = questions.findIndex((question) => question.id === qId);
+      const nextQuestion = questions[questionIndex + 1];
+
+      if (
+        isNegativeAnswer(value) &&
+        nextQuestion &&
+        isSkippedWhenPreviousAnswerIsNo(nextQuestion)
+      ) {
+        delete nextAnswers[nextQuestion.id];
+      }
+
+      return nextAnswers;
+    });
   };
 
   const handleFileUpload = async (qId: number, file: File) => {
@@ -166,7 +200,7 @@ function TambahLaporanContent() {
     setSubmitNotification(null);
     setSubmitErrorMessage("");
 
-    const unansweredMandatory = questions.filter(
+    const unansweredMandatory = visibleQuestions.filter(
       (q) => (q.is_mandatory || requiredQuestionIds.has(q.id)) && (!answers[q.id] || !answers[q.id].value?.trim())
     );
     
@@ -216,8 +250,15 @@ function TambahLaporanContent() {
     }
   };
 
-  const answeredCount = Object.values(answers).filter(a => a && a.value !== "").length;
-  const totalQuestions = questions.length;
+  const visibleQuestions = questions.filter((question, index) => {
+    if (index === 0 || !isSkippedWhenPreviousAnswerIsNo(question)) return true;
+
+    const previousAnswer = answers[questions[index - 1].id]?.value;
+    return !isNegativeAnswer(previousAnswer);
+  });
+
+  const answeredCount = visibleQuestions.filter((question) => answers[question.id]?.value !== "").length;
+  const totalQuestions = visibleQuestions.length;
 
   return (
     <div className="flex w-full h-full relative bg-slate-50">
@@ -294,7 +335,7 @@ function TambahLaporanContent() {
 
             {/* List Pertanyaan */}
             <div className="space-y-6">
-              {questions.map((q, idx) => {
+              {visibleQuestions.map((q, idx) => {
                 const qType = determineAnswerType(q.question_text);
                 const hasOptions = q.scoring_rules && q.scoring_rules.length > 0;
                 const ans = answers[q.id];
@@ -385,7 +426,7 @@ function TambahLaporanContent() {
               <h4 className="font-bold text-sm text-slate-800 mb-6">Pertanyaan yang Terjawab</h4>
               
               <div className="grid grid-cols-5 gap-3 mb-8">
-                {questions.map((q, idx) => {
+                {visibleQuestions.map((q, idx) => {
                   const isAnswered = answers[q.id] && answers[q.id].value !== "";
                   return (
                     <div 

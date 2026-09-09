@@ -43,6 +43,12 @@ export default function PelaporDashboardPage() {
   const [mediaTypes, setMediaTypes] = useState<any[]>([]);
   const [selectedMediaType, setSelectedMediaType] = useState("");
   const [mediaName, setMediaName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [formErrors, setFormErrors] = useState({
+    mediaType: "",
+    mediaName: "",
+    contactNumber: "",
+  });
   
   // State Metrik
   const [stats, setStats] = useState({
@@ -109,18 +115,28 @@ export default function PelaporDashboardPage() {
   const handleOpenAddReportModal = () => {
     setSelectedMediaType("");
     setMediaName("");
+    setContactNumber("");
+    setFormErrors({ mediaType: "", mediaName: "", contactNumber: "" });
     setIsAddReportModalOpen(true);
   };
 
   const handleContinueAddReport = () => {
-    if (!selectedMediaType || !mediaName.trim()) {
-      alert("Harap pilih jenis media dan isi nama media.");
+    const errors = {
+      mediaType: selectedMediaType ? "" : "Jenis media harus diisi.",
+      mediaName: mediaName.trim() ? "" : "Nama media harus diisi.",
+      contactNumber: contactNumber.trim() ? "" : "Nomor kontak harus diisi.",
+    };
+
+    setFormErrors(errors);
+
+    if (Object.values(errors).some(Boolean)) {
       return;
     }
 
     const params = new URLSearchParams({
       media_type_id: selectedMediaType,
       media_name: mediaName.trim(),
+      contact_number: contactNumber.trim(),
     });
     router.push(`/pelapor/tambah-laporan?${params.toString()}`);
   };
@@ -140,14 +156,18 @@ export default function PelaporDashboardPage() {
                 <label className="mb-2 block text-[10px] font-bold text-slate-700">Pilih jenis media <span className="text-red-500">*</span></label>
                 <select
                   value={selectedMediaType}
-                  onChange={(event) => setSelectedMediaType(event.target.value)}
-                  className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
+                  onChange={(event) => {
+                    setSelectedMediaType(event.target.value);
+                    setFormErrors((previous) => ({ ...previous, mediaType: "" }));
+                  }}
+                  className={`block w-full rounded-lg border bg-white px-3 py-2.5 text-xs text-slate-700 outline-none focus:border-blue-500 ${formErrors.mediaType ? "border-red-500" : "border-slate-200"}`}
                 >
                   <option value="" disabled>Pilih Jenis Media</option>
                   {mediaTypes.map((type) => (
                     <option key={type.id} value={type.id}>{type.name}</option>
                   ))}
                 </select>
+                {formErrors.mediaType && <p className="mt-1.5 text-[10px] font-medium text-red-600">{formErrors.mediaType}</p>}
               </div>
 
               <div>
@@ -155,10 +175,29 @@ export default function PelaporDashboardPage() {
                 <input
                   type="text"
                   value={mediaName}
-                  onChange={(event) => setMediaName(event.target.value)}
+                  onChange={(event) => {
+                    setMediaName(event.target.value);
+                    setFormErrors((previous) => ({ ...previous, mediaName: "" }));
+                  }}
                   placeholder="Masukkan nama media"
-                  className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs text-slate-700 outline-none focus:border-blue-500"
+                  className={`block w-full rounded-lg border bg-white px-3 py-2.5 text-xs text-slate-700 outline-none focus:border-blue-500 ${formErrors.mediaName ? "border-red-500" : "border-slate-200"}`}
                 />
+                {formErrors.mediaName && <p className="mt-1.5 text-[10px] font-medium text-red-600">{formErrors.mediaName}</p>}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-[10px] font-bold text-slate-700">Kontak Yang Dapat Dihubungi <span className="text-red-500">*</span></label>
+                <input
+                  type="tel"
+                  value={contactNumber}
+                  onChange={(event) => {
+                    setContactNumber(event.target.value);
+                    setFormErrors((previous) => ({ ...previous, contactNumber: "" }));
+                  }}
+                  placeholder="Masukkan nomor WhatsApp atau kontak"
+                  className={`block w-full rounded-lg border bg-white px-3 py-2.5 text-xs text-slate-700 outline-none focus:border-blue-500 ${formErrors.contactNumber ? "border-red-500" : "border-slate-200"}`}
+                />
+                {formErrors.contactNumber && <p className="mt-1.5 text-[10px] font-medium text-red-600">{formErrors.contactNumber}</p>}
               </div>
             </div>
 
