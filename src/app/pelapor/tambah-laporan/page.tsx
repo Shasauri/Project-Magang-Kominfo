@@ -22,7 +22,8 @@ const determineAnswerType = (questionText: string) => {
 
 const isNegativeAnswer = (value: string | undefined) => {
   if (!value) return false;
-  return value.trim().toLowerCase().startsWith("tidak");
+  const normalizedValue = value.trim().toLowerCase();
+  return normalizedValue.startsWith("tidak") || normalizedValue === "ada tanpa ukw";
 };
 
 const isSkippedWhenPreviousAnswerIsNo = (question: any) => {

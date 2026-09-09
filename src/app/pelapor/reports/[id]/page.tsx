@@ -21,6 +21,20 @@ const determineAnswerType = (questionText: string) => {
   return "text";
 };
 
+const isNegativeAnswer = (value: string | undefined) =>
+  (() => {
+    const normalizedValue = value?.trim().toLowerCase();
+    return Boolean(
+      normalizedValue &&
+      (normalizedValue.startsWith("tidak") || normalizedValue === "ada tanpa ukw")
+    );
+  })();
+
+const isAttachmentQuestion = (question: any) => {
+  const answerType = determineAnswerType(question.question_text);
+  return answerType === "file" || answerType === "url";
+};
+
 export default function DetailEditLaporanPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -36,6 +50,7 @@ export default function DetailEditLaporanPage() {
   // State untuk form edit
   const [answersForm, setAnswersForm] = useState<{ [key: number]: { value: string, type: string, fileName?: string } }>({});
   const [uploadingFiles, setUploadingFiles] = useState<{ [key: number]: boolean }>({});
+  const [clearedAnswerIds, setClearedAnswerIds] = useState<Set<number>>(new Set());
 
   // 1. Load Data Laporan & Pertanyaan
   const fetchData = async () => {
@@ -81,6 +96,7 @@ export default function DetailEditLaporanPage() {
         });
       }
       setAnswersForm(initialAnswers);
+      setClearedAnswerIds(new Set());
 
     } catch (error) {
       console.error("Gagal mengambil data:", error);
@@ -98,7 +114,23 @@ export default function DetailEditLaporanPage() {
   // 2. Handler Perubahan Form
   const handleTextChange = (qId: number, value: string, questionText: string) => {
     const type = determineAnswerType(questionText);
-    setAnswersForm(prev => ({ ...prev, [qId]: { value, type } }));
+    const questionIndex = questions.findIndex((question) => question.id === qId);
+    const nextQuestion = questions[questionIndex + 1];
+    const shouldClearNextAttachment = Boolean(
+      isNegativeAnswer(value) && nextQuestion && isAttachmentQuestion(nextQuestion)
+    );
+
+    setAnswersForm(prev => {
+      const nextAnswers = { ...prev, [qId]: { value, type } };
+      if (shouldClearNextAttachment) {
+        delete nextAnswers[nextQuestion.id];
+      }
+      return nextAnswers;
+    });
+
+    if (!shouldClearNextAttachment) return;
+
+    setClearedAnswerIds(prev => new Set(prev).add(nextQuestion.id));
   };
 
   // 3. Handler Upload File On-The-Fly
@@ -148,6 +180,7 @@ export default function DetailEditLaporanPage() {
       };
     });
     setAnswersForm(initialAnswers);
+    setClearedAnswerIds(new Set());
   };
 
   // 5. Simpan Perubahan (Submit PUT Request)
@@ -167,7 +200,34 @@ export default function DetailEditLaporanPage() {
       }
     });
 
+    clearedAnswerIds.forEach((qId) => {
+      if (!formattedAnswers.some((answer) => answer.question_id === qId)) {
+        formattedAnswers.push({
+          question_id: qId,
+          answer_value: null,
+          answer_type: determineAnswerType(
+            questions.find((question) => question.id === qId)?.question_text || ""
+          ),
+        });
+      }
+    });
+
     try {
+      for (const qId of clearedAnswerIds) {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/reports/${id}/answers/${qId}`,
+          {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` },
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Lampiran gagal dihapus.");
+        }
+      }
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${id}`, {
         method: "PUT",
         headers: { 
@@ -208,7 +268,11 @@ export default function DetailEditLaporanPage() {
   };
 
   const answeredCount = Object.values(answersForm).filter(a => a && a.value !== "").length;
-  const totalQuestions = questions.length;
+  const visibleQuestions = questions.filter((question, index) => {
+    if (index === 0 || !isAttachmentQuestion(question)) return true;
+    return !isNegativeAnswer(answersForm[questions[index - 1].id]?.value);
+  });
+  const totalQuestions = visibleQuestions.length;
   const isPending = reportData.status === "pending";
 
   return (
@@ -266,7 +330,7 @@ export default function DetailEditLaporanPage() {
 
         {/* List Pertanyaan Form */}
         <div className="space-y-6 max-w-4xl">
-          {questions.map((q, idx) => {
+          {visibleQuestions.map((q, idx) => {
             const qType = determineAnswerType(q.question_text);
             const hasOptions = q.scoring_rules && q.scoring_rules.length > 0;
             const ansState = answersForm[q.id];
@@ -376,7 +440,7 @@ export default function DetailEditLaporanPage() {
           <h4 className="font-bold text-sm text-slate-800 mb-6">Pertanyaan yang Terjawab</h4>
           
           <div className="grid grid-cols-5 gap-3">
-            {questions.map((q, idx) => {
+            {visibleQuestions.map((q, idx) => {
               const isAnswered = answersForm[q.id] && answersForm[q.id].value !== "";
               return (
                 <div 
