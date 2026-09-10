@@ -13,6 +13,11 @@ const getCookie = (name: string) => {
   return null;
 };
 
+const getStoredToken = () => {
+  if (typeof window === "undefined") return null;
+  return getCookie("token") || localStorage.getItem("token");
+};
+
 export default function DashboardPage() {
   const [userName, setUserName] = useState("Admin");
   const [dashboardData, setDashboardData] = useState({ 
@@ -23,6 +28,7 @@ export default function DashboardPage() {
   });
   const [reports, setReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [reportsError, setReportsError] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -47,8 +53,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = getCookie("token");
-      if (!token) return;
+      const token = getStoredToken();
+      if (!token) {
+        setReportsError("Sesi login tidak ditemukan. Silakan login kembali.");
+        setIsLoading(false);
+        return;
+      }
 
       const headers = {
         "Content-Type": "application/json",
@@ -72,7 +82,12 @@ export default function DashboardPage() {
         }
         if (reportsRes.ok) {
           const reportsData = await reportsRes.json();
-          setReports(reportsData.data || []);
+          setReports(Array.isArray(reportsData) ? reportsData : reportsData.data || []);
+          setReportsError("");
+        } else {
+          const errorData = await reportsRes.json().catch(() => null);
+          setReportsError(errorData?.message || `Gagal memuat laporan (HTTP ${reportsRes.status}).`);
+          console.error("Gagal mengambil laporan admin:", reportsRes.status, errorData);
         }
         if (mediaRes.ok) {
           const mediaData = await mediaRes.json();
@@ -80,6 +95,7 @@ export default function DashboardPage() {
         }
       } catch (error) {
         console.error("Gagal mengambil data API", error);
+        setReportsError("Tidak dapat terhubung ke server. Periksa koneksi dan API.");
       } finally {
         setIsLoading(false);
       }
@@ -339,7 +355,7 @@ export default function DashboardPage() {
                 {isLoading ? (
                   <tr><td colSpan={8} className="py-8 text-center text-slate-400">Memuat data...</td></tr>
                 ) : reports.length === 0 ? (
-                  <tr><td colSpan={8} className="py-8 text-center text-slate-400">Belum ada laporan.</td></tr>
+                  <tr><td colSpan={8} className="py-8 text-center text-slate-400">{reportsError || "Belum ada laporan."}</td></tr>
                 ) : (
                   reports.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50 transition-colors">

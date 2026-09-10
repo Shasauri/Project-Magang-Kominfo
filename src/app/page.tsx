@@ -295,7 +295,7 @@ export default function LandingPage() {
               <ul className="space-y-3 text-xs">
                 <li>Dinas Komunikasi, Informatika, Statistik dan Persandian</li>
                 <li>Pemerintah Kabupaten Banjar, Kalimantan Selatan</li>
-                <li>Email: info@kabupatenbanjar.go.id</li>
+                <li>Email: Kominfomtpadmin@gmail.com</li>
               </ul>
             </div>
 
