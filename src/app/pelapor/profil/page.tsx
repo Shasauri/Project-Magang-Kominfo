@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
 // Helper Token
@@ -12,6 +12,38 @@ const getCookie = (name: string) => {
   return null;
 };
 
+const readApiResponse = async (res: Response) => {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { message: text.slice(0, 200) };
+  }
+};
+
+const getAvatarUrl = (avatarUrl: string | null | undefined, version = 0) => {
+  if (!avatarUrl) return "/images/user.png";
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
+  let resolvedUrl = avatarUrl;
+
+  try {
+    const parsedUrl = new URL(avatarUrl, apiOrigin || window.location.origin);
+    if (parsedUrl.hostname === "localhost" || parsedUrl.hostname === "127.0.0.1") {
+      const configuredOrigin = new URL(apiOrigin).origin;
+      parsedUrl.protocol = new URL(configuredOrigin).protocol;
+      parsedUrl.host = new URL(configuredOrigin).host;
+    }
+    resolvedUrl = parsedUrl.toString();
+  } catch {
+    resolvedUrl = avatarUrl;
+  }
+
+  return version ? `${resolvedUrl}${resolvedUrl.includes("?") ? "&" : "?"}v=${version}` : resolvedUrl;
+};
+
 export default function ProfilPelaporPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
@@ -20,6 +52,9 @@ export default function ProfilPelaporPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  const [avatarVersion, setAvatarVersion] = useState(0);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // State untuk form Kata Sandi
   const [currentPassword, setCurrentPassword] = useState("");
@@ -56,6 +91,75 @@ export default function ProfilPelaporPage() {
     };
     fetchUser();
   }, []);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) {
+      setErrorMessage("Foto profil harus berupa gambar dan berukuran maksimal 2 MB.");
+      return;
+    }
+
+    setIsSavingAvatar(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+    const token = getCookie("token");
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/avatar`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData
+      });
+      const data = await readApiResponse(res);
+      if (!res.ok) {
+        setErrorMessage(data.message || "Gagal mengunggah foto profil.");
+        return;
+      }
+
+      if (data.user) setUserData(data.user);
+      setAvatarVersion(Date.now());
+      setSuccessMessage("Foto profil berhasil diunggah");
+      setTimeout(() => setSuccessMessage(""), 2000);
+    } catch (error) {
+      console.error("Gagal mengunggah foto profil:", error);
+      setErrorMessage("Tidak dapat terhubung ke server. Periksa koneksi atau alamat API.");
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
+
+  const handleAvatarDelete = async () => {
+    setIsSavingAvatar(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+    const token = getCookie("token");
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/avatar`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await readApiResponse(res);
+      if (!res.ok) {
+        setErrorMessage(data.message || "Gagal menghapus foto profil.");
+        return;
+      }
+
+      if (data.user) setUserData(data.user);
+      setSuccessMessage("Foto profil berhasil dihapus");
+      setTimeout(() => setSuccessMessage(""), 2000);
+    } catch (error) {
+      console.error("Gagal menghapus foto profil:", error);
+      setErrorMessage("Tidak dapat terhubung ke server. Periksa koneksi atau alamat API.");
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
 
   // Handler Simpan Profil
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -178,11 +282,12 @@ export default function ProfilPelaporPage() {
         <div className="relative mb-6">
           <div className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-slate-100 bg-white shadow-sm">
             <Image
-              src="/images/Remielle.jpeg"
+              src={getAvatarUrl(userData?.avatar_url, avatarVersion)}
               alt="Foto profil"
               fill
               className="object-cover"
               sizes="112px"
+              unoptimized
               onError={(event) => {
                 event.currentTarget.style.display = "none";
                 event.currentTarget.parentElement?.classList.add("items-center", "justify-center", "text-3xl", "font-bold", "text-blue-600");
@@ -192,11 +297,12 @@ export default function ProfilPelaporPage() {
               }}
             />
           </div>
-          {/* Ikon Edit Avatar */}
-          <button className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white border-2 border-white hover:bg-blue-700 transition-colors shadow-sm">
+          <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/jpg,image/webp" onChange={handleAvatarUpload} className="hidden" />
+          <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={isSavingAvatar} aria-label="Ubah foto profil" className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white border-2 border-white hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" /></svg>
           </button>
         </div>
+        {userData?.avatar_url && <button type="button" onClick={handleAvatarDelete} disabled={isSavingAvatar} className="mb-4 text-xs font-semibold text-red-500 hover:text-red-700 disabled:opacity-50">Hapus foto</button>}
         
         <h2 className="text-xl font-bold text-slate-800 mb-1 text-center">{userData?.name || name || "Pelapor"}</h2>
         <p className="text-xs text-slate-500 mb-6 font-medium capitalize text-center">{userData?.role || "Pelapor"}</p>

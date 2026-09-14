@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 // Helper untuk membaca token
@@ -10,6 +10,38 @@ const getCookie = (name: string) => {
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop()?.split(";").shift();
   return null;
+};
+
+const readApiResponse = async (res: Response) => {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { message: text.slice(0, 200) };
+  }
+};
+
+const getAvatarUrl = (avatarUrl: string | null | undefined, version = 0) => {
+  if (!avatarUrl) return "/images/user.png";
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
+  let resolvedUrl = avatarUrl;
+
+  try {
+    const parsedUrl = new URL(avatarUrl, apiOrigin || window.location.origin);
+    if (parsedUrl.hostname === "localhost" || parsedUrl.hostname === "127.0.0.1") {
+      const configuredOrigin = new URL(apiOrigin).origin;
+      parsedUrl.protocol = new URL(configuredOrigin).protocol;
+      parsedUrl.host = new URL(configuredOrigin).host;
+    }
+    resolvedUrl = parsedUrl.toString();
+  } catch {
+    resolvedUrl = avatarUrl;
+  }
+
+  return version ? `${resolvedUrl}${resolvedUrl.includes("?") ? "&" : "?"}v=${version}` : resolvedUrl;
 };
 
 // Helper inisial nama
@@ -28,6 +60,9 @@ export default function ProfilPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isSavingAvatar, setIsSavingAvatar] = useState(false);
+  const [avatarVersion, setAvatarVersion] = useState(0);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // State Form Kata Sandi
   const [currentPassword, setCurrentPassword] = useState("");
@@ -68,6 +103,75 @@ export default function ProfilPage() {
 
     fetchProfile();
   }, []);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) {
+      setErrorMessage("Foto profil harus berupa gambar dan berukuran maksimal 2 MB.");
+      return;
+    }
+
+    setIsSavingAvatar(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+    const token = getCookie("token");
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/avatar`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+        body: formData
+      });
+      const data = await readApiResponse(res);
+      if (!res.ok) {
+        setErrorMessage(data.message || "Gagal mengunggah foto profil.");
+        return;
+      }
+
+      if (data.user) setUser(data.user);
+      setAvatarVersion(Date.now());
+      setSuccessMessage("Foto profil berhasil diunggah");
+      setTimeout(() => setSuccessMessage(""), 2000);
+    } catch (error) {
+      console.error("Gagal mengunggah foto profil:", error);
+      setErrorMessage("Tidak dapat terhubung ke server. Periksa koneksi atau alamat API.");
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
+
+  const handleAvatarDelete = async () => {
+    setIsSavingAvatar(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+    const token = getCookie("token");
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/avatar`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await readApiResponse(res);
+      if (!res.ok) {
+        setErrorMessage(data.message || "Gagal menghapus foto profil.");
+        return;
+      }
+
+      if (data.user) setUser(data.user);
+      setSuccessMessage("Foto profil berhasil dihapus");
+      setTimeout(() => setSuccessMessage(""), 2000);
+    } catch (error) {
+      console.error("Gagal menghapus foto profil:", error);
+      setErrorMessage("Tidak dapat terhubung ke server. Periksa koneksi atau alamat API.");
+    } finally {
+      setIsSavingAvatar(false);
+    }
+  };
 
   // Handler Simpan Profil
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -179,17 +283,20 @@ export default function ProfilPage() {
         <div className="relative mb-6">
           <div className="relative h-28 w-28 overflow-hidden rounded-full border-[6px] border-white bg-white shadow-sm">
             <Image
-              src="/images/Zani.jpeg"
+              src={getAvatarUrl(user?.avatar_url, avatarVersion)}
               alt="Foto profil admin"
               fill
               className="object-cover"
               sizes="112px"
+              unoptimized
             />
           </div>
-          <div className="absolute bottom-1 right-1 w-8 h-8 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white shadow-sm cursor-pointer hover:bg-blue-700 transition-colors">
+          <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/jpg,image/webp" onChange={handleAvatarUpload} className="hidden" />
+          <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={isSavingAvatar} aria-label="Ubah foto profil" className="absolute bottom-1 right-1 w-8 h-8 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white shadow-sm cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-50">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
-          </div>
+          </button>
         </div>
+        {user?.avatar_url && <button type="button" onClick={handleAvatarDelete} disabled={isSavingAvatar} className="mb-4 text-xs font-semibold text-red-500 hover:text-red-700 disabled:opacity-50">Hapus foto</button>}
         
         <h2 className="text-xl font-bold text-slate-800 mb-1">{user?.name || "Admin Name"}</h2>
         <p className="text-sm text-slate-500 capitalize mb-6">Admin {user?.role === 'admin' ? 'Sistem' : user?.role}</p>
