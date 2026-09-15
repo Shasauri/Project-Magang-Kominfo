@@ -31,6 +31,17 @@ const isSkippedWhenPreviousAnswerIsNo = (question: any) => {
   return answerType === "file" || answerType === "url";
 };
 
+const getResponseErrorMessage = async (response: Response, fallback: string) => {
+  try {
+    const data = await response.json();
+    if (data?.message) return data.message;
+    const errors = data?.errors ? Object.values(data.errors).flat().join(" ") : "";
+    return errors || fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 const requiredQuestionIds = new Set([9, 15]);
 
 const isRequiredQuestion = (question: any) => {
@@ -65,7 +76,8 @@ function TambahLaporanContent() {
   const [questions, setQuestions] = useState<any[]>([]);
   // answers menyimpan tipe, value (string path/teks), dan nama file asli (untuk UI)
   const [answers, setAnswers] = useState<{ [key: number]: { value: string, type: string, fileName?: string } }>({});
-  const [uploadingFiles, setUploadingFiles] = useState<{ [key: number]: boolean }>({});
+  const [pendingFiles, setPendingFiles] = useState<{ [key: number]: File }>({});
+  const [uploadingFiles] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     const fetchMediaTypes = async () => {
@@ -171,35 +183,8 @@ function TambahLaporanContent() {
   };
 
   const handleFileUpload = async (qId: number, file: File) => {
-    setUploadingFiles(prev => ({ ...prev, [qId]: true }));
-    const token = getCookie("token");
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      // Upload file sebelum laporan dibuat; path-nya dikirim saat submit final.
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/upload/${qId}`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}` },
-        body: formData
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setAnswers(prev => ({ 
-          ...prev,
-          [qId]: { value: data.file_path, type: "file", fileName: file.name }
-        }));
-      } else {
-        const err = await res.json();
-        alert(err.message || "Gagal mengunggah file. Silakan coba lagi.");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Terjadi kesalahan jaringan saat mengunggah.");
-    } finally {
-      setUploadingFiles(prev => ({ ...prev, [qId]: false }));
-    }
+    setPendingFiles(prev => ({ ...prev, [qId]: file }));
+    setAnswers(prev => ({ ...prev, [qId]: { value: "", type: "file", fileName: file.name } }));
   };
 
   // ---------------------------------------------------------
@@ -211,7 +196,9 @@ function TambahLaporanContent() {
     setSubmitErrorMessage("");
 
     const unansweredMandatory = visibleQuestions.filter(
-      (q) => isRequiredQuestion(q) && (!answers[q.id] || !answers[q.id].value?.trim())
+      (q) => isRequiredQuestion(q) && (
+        (!answers[q.id] || !answers[q.id].value?.trim()) && !pendingFiles[q.id]
+      )
     );
     
     if (unansweredMandatory.length > 0) {
@@ -233,16 +220,17 @@ function TambahLaporanContent() {
     const token = getCookie("token");
     const baseURL = process.env.NEXT_PUBLIC_API_URL;
     
-    // Susun array jawaban yang sudah rapi
-    const formattedAnswers = Object.entries(answers).map(([qId, data]) => ({
-      question_id: Number(qId),
-      answer_value: data.value,
-      answer_type: data.type
-    }));
+    const formattedAnswers = Object.entries(answers)
+      .filter(([, data]) => data.type !== "file" && data.value.trim())
+      .map(([qId, data]) => ({
+        question_id: Number(qId),
+        answer_value: data.value,
+        answer_type: data.type
+      }));
 
     try {
-      // Buat dan submit laporan dalam satu request setelah form lengkap.
-      const submitRes = await fetch(`${baseURL}/reports`, {
+      // Buat draft lebih dulu agar backend memiliki reportId untuk upload file.
+      const draftRes = await fetch(`${baseURL}/reports`, {
         method: "POST",
         headers: { 
           "Authorization": `Bearer ${token}`,
@@ -250,17 +238,43 @@ function TambahLaporanContent() {
         },
         body: JSON.stringify({
           media_type_id: Number(selectedMediaType),
-          submit: true,
+          submit: false,
           answers: formattedAnswers
         })
       });
 
-      if (submitRes.ok) {
-        setSubmitNotification("success");
-      } else {
-        const err = await submitRes.json();
-        throw new Error(err.message || "Gagal finalisasi laporan");
+      if (!draftRes.ok) {
+        throw new Error(await getResponseErrorMessage(draftRes, "Gagal membuat draft laporan."));
       }
+
+      const draftData = await draftRes.json();
+      const reportId = draftData.report?.id || draftData.id;
+      if (!reportId) throw new Error("Respons pembuatan laporan tidak memiliki ID laporan.");
+
+      for (const [qId, file] of Object.entries(pendingFiles)) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const uploadRes = await fetch(`${baseURL}/reports/${reportId}/upload/${qId}`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${token}` },
+          body: formData
+        });
+
+        if (!uploadRes.ok) {
+          throw new Error(await getResponseErrorMessage(uploadRes, `Gagal mengunggah file pertanyaan ${qId}.`));
+        }
+      }
+
+      const submitRes = await fetch(`${baseURL}/reports/${reportId}/submit`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      if (!submitRes.ok) {
+        throw new Error(await getResponseErrorMessage(submitRes, "Gagal finalisasi laporan."));
+      }
+
+      setSubmitNotification("success");
     } catch (error: any) {
       console.error(error);
       setSubmitErrorMessage(error.message || "Terjadi kesalahan saat submit.");
