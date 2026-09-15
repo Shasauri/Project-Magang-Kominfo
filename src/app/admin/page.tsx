@@ -292,7 +292,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex w-full h-full relative">
-      <main className="flex-1 px-8 lg:px-10 pb-10 pt-2">
+      <main className="flex-1 min-w-0 px-8 lg:px-10 pb-10 pt-2">
         <h2 className="text-xl font-bold text-slate-800 mb-6">Selamat Datang, {userName}!</h2>
 
         {/* Card Widgets */}
@@ -337,13 +337,23 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
+          <div className="min-w-0 overflow-x-auto">
+            <table className="w-full table-fixed text-sm text-left">
+              <colgroup>
+                <col className="w-[12%]" />
+                <col className="w-[18%]" />
+                <col className="w-[14%]" />
+                <col className="w-[12%]" />
+                <col className="w-[15%]" />
+                <col className="w-[9%]" />
+                <col className="w-[12%]" />
+                <col className="w-[8%]" />
+              </colgroup>
               <thead>
                 <tr className="text-xs font-semibold text-slate-500 border-b border-slate-100">
                   <th className="pb-4 font-medium">Kode Media</th>
                   <th className="pb-4 font-medium">Nama Media</th>
-                  <th className="pb-4 font-medium">Tanggal di submit</th>
+                  <th className="pb-4 font-medium">Tanggal submit</th>
                   <th className="pb-4 font-medium">Tipe media</th>
                   <th className="pb-4 font-medium text-center">Kategori</th>
                   <th className="pb-4 font-medium text-center">Penilaian</th>
@@ -359,12 +369,12 @@ export default function DashboardPage() {
                 ) : (
                   reports.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-4 font-medium text-slate-700">{item.report_code}</td>
-                      <td className="py-4 text-slate-600">{item.media_name}</td>
-                      <td className="py-4 text-slate-500">{item.submitted_at ? item.submitted_at.substring(0, 10) : '-'}</td>
-                      <td className="py-4 text-slate-600">{item.media_type}</td>
-                      <td className="py-4 text-center text-slate-600">{item.category}</td>
-                      <td className="py-4 text-center font-semibold text-slate-700">{item.total_score}</td>
+                      <td className="break-words py-4 font-medium text-slate-700">{item.report_code}</td>
+                      <td className="break-words py-4 text-slate-600">{item.media_name}</td>
+                      <td className="break-words py-4 text-slate-500">{item.submitted_at ? item.submitted_at.substring(0, 10) : '-'}</td>
+                      <td className="break-words py-4 text-slate-600">{item.media_type}</td>
+                      <td className="break-words py-4 text-center text-slate-600">{item.category}</td>
+                      <td className="break-words py-4 text-center font-semibold text-slate-700">{item.total_score}</td>
                       
                       <td className="py-4 text-center">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold ${
@@ -399,7 +409,7 @@ export default function DashboardPage() {
       </main>
 
       {/* SIDEBAR KANAN (Kalender & Status) */}
-      <aside className="hidden xl:block w-[400px] bg-slate-50 border-l border-slate-200 p-8 sticky top-0 h-[calc(100vh-88px)">
+      <aside className="hidden xl:block w-[400px] shrink-0 bg-slate-50 border-l border-slate-200 p-8 sticky top-0 h-[calc(100vh-88px)]">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
           <div className="flex items-center justify-between mb-2">
             <h4 className="font-semibold text-sm text-blue-600">Kalender</h4>

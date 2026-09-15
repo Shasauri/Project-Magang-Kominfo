@@ -187,7 +187,7 @@ export default function AdminLayout({
       </aside>
 
       {/* ================= KONTEN UTAMA KANAN ================= */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         
         {/* Topbar */}
         <header className="h-24 px-8 flex items-center shrink-0">

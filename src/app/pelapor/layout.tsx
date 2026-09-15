@@ -164,7 +164,7 @@ export default function PelaporLayout({
       </aside>
 
       {/* KONTEN UTAMA */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         <header className="h-24 px-8 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
             {/* TOMBOL TOGGLE DIHUBUNGKAN KE STATE */}

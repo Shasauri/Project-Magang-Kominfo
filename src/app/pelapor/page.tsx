@@ -222,7 +222,7 @@ export default function PelaporDashboardPage() {
       )}
       
       {/* ================= KONTEN UTAMA TENGAH ================= */}
-      <main className="flex-1 px-8 lg:px-10 pb-10 pt-4">
+      <main className="flex-1 min-w-0 px-8 lg:px-10 pb-10 pt-4">
         <h2 className="text-2xl font-bold text-slate-800 mb-8">Selamat Datang, {userName}!</h2>
 
         {isLoading ? (
@@ -288,13 +288,23 @@ export default function PelaporDashboardPage() {
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
+              <div className="min-w-0 overflow-x-auto">
+                <table className="w-full table-fixed text-sm text-left">
+                  <colgroup>
+                    <col className="w-[12%]" />
+                    <col className="w-[18%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[15%]" />
+                    <col className="w-[9%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[8%]" />
+                  </colgroup>
                   <thead>
                     <tr className="text-xs font-semibold text-slate-400 border-b border-slate-100">
                       <th className="pb-4 font-medium">Kode Media</th>
                       <th className="pb-4 font-medium">Nama Media</th>
-                      <th className="pb-4 font-medium">Tanggal Di submit</th>
+                      <th className="pb-4 font-medium">Tanggal submit</th>
                       <th className="pb-4 font-medium">Tipe Media</th>
                       <th className="pb-4 font-medium text-center">Kategori</th>
                       <th className="pb-4 font-medium text-center">Penilaian</th>
@@ -308,12 +318,12 @@ export default function PelaporDashboardPage() {
                     ) : (
                       reports.map((item, idx) => (
                         <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                          <td className="py-4 font-bold text-slate-700 text-xs">{item.report_code}</td>
-                          <td className="py-4 font-medium text-slate-600 text-xs">{getMediaName(item.answers)}</td>
-                          <td className="py-4 text-slate-500 text-xs">{formatDate(item.submitted_at)}</td>
-                          <td className="py-4 text-slate-600 text-xs">{item.media_type?.name || '-'}</td>
-                          <td className="py-4 text-center font-bold text-slate-700 text-xs">{item.category}</td>
-                          <td className="py-4 text-center font-bold text-slate-800 text-xs">{item.total_score}</td>
+                          <td className="break-words py-4 font-bold text-slate-700 text-xs">{item.report_code}</td>
+                          <td className="break-words py-4 font-medium text-slate-600 text-xs">{getMediaName(item.answers)}</td>
+                          <td className="break-words py-4 text-slate-500 text-xs">{formatDate(item.submitted_at)}</td>
+                          <td className="break-words py-4 text-slate-600 text-xs">{item.media_type?.name || '-'}</td>
+                          <td className="break-words py-4 text-center font-bold text-slate-700 text-xs">{item.category}</td>
+                          <td className="break-words py-4 text-center font-bold text-slate-800 text-xs">{item.total_score}</td>
                           
                           <td className="py-4 text-center">
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold ${
@@ -346,7 +356,7 @@ export default function PelaporDashboardPage() {
       </main>
 
       {/* ================= SIDEBAR KANAN ================= */}
-      <aside className="hidden xl:block w-[400px] bg-slate-50 border-l border-slate-200 p-8 sticky top-0 h-[calc(100vh-88px)]">
+      <aside className="hidden xl:block w-[400px] shrink-0 bg-slate-50 border-l border-slate-200 p-8 sticky top-0 h-[calc(100vh-88px)]">
         
         {/* Widget Kalender */}
         <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 mb-6">
