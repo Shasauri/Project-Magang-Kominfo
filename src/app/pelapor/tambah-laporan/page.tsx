@@ -33,6 +33,15 @@ const isSkippedWhenPreviousAnswerIsNo = (question: any) => {
 
 const requiredQuestionIds = new Set([9, 15]);
 
+const isRequiredQuestion = (question: any) => {
+  const questionText = question.question_text?.toLowerCase() || "";
+  return (
+    question.is_mandatory ||
+    requiredQuestionIds.has(question.id) ||
+    questionText.includes("link sosial media")
+  );
+};
+
 function TambahLaporanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -202,10 +211,20 @@ function TambahLaporanContent() {
     setSubmitErrorMessage("");
 
     const unansweredMandatory = visibleQuestions.filter(
-      (q) => (q.is_mandatory || requiredQuestionIds.has(q.id)) && (!answers[q.id] || !answers[q.id].value?.trim())
+      (q) => isRequiredQuestion(q) && (!answers[q.id] || !answers[q.id].value?.trim())
     );
     
     if (unansweredMandatory.length > 0) {
+      const unansweredNumbers = unansweredMandatory.map(
+        (question) => visibleQuestions.findIndex((item) => item.id === question.id) + 1
+      );
+      const formattedNumbers = unansweredNumbers.length === 1
+        ? `${unansweredNumbers[0]}`
+        : `${unansweredNumbers.slice(0, -1).join(", ")} dan ${unansweredNumbers[unansweredNumbers.length - 1]}`;
+
+      setSubmitErrorMessage(
+        `Harap lengkapi pertanyaan nomor ${formattedNumbers} sebelum melakukan submit.`
+      );
       setSubmitNotification("incomplete");
       return;
     }
@@ -344,7 +363,7 @@ function TambahLaporanContent() {
 
                 return (
                   <div key={q.id} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                    <h4 className="text-sm font-bold text-slate-800 mb-4">{idx + 1}. {q.question_text} {requiredQuestionIds.has(q.id) && <span className="text-red-500">*</span>}</h4>
+                    <h4 className="text-sm font-bold text-slate-800 mb-4">{idx + 1}. {q.question_text} {isRequiredQuestion(q) && <span className="text-red-500">*</span>}</h4>
                     <div className="border-t border-slate-100 pt-4">
                       <span className="text-[10px] font-bold text-blue-600 block mb-4">Jawaban</span>
                       
@@ -503,7 +522,7 @@ function TambahLaporanContent() {
                 </div>
                 <p className="max-w-[240px] text-sm font-bold leading-snug text-slate-900">
                   {submitNotification === "incomplete"
-                    ? "Harap lengkapi pertanyaan nomor 9 dan 15 sebelum melakukan submit."
+                    ? submitErrorMessage
                     : submitErrorMessage}
                 </p>
                 <button
