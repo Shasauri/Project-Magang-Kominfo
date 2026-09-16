@@ -1,0 +1,20 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sifokam-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - WATCHPACK_POLLING=true
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
+    volumes:
+      # Synchronize code changes live between local folder and container
+      - .:/app
+      # Preserve container node_modules & build cache
+      - /app/node_modules
+      - /app/.next
+    restart: unless-stopped

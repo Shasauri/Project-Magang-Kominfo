@@ -291,7 +291,15 @@ function TambahLaporanContent() {
     return !isNegativeAnswer(previousAnswer);
   });
 
-  const answeredCount = visibleQuestions.filter((question) => answers[question.id]?.value !== "").length;
+  const isQuestionAnswered = (qId: number) => {
+    const ans = answers[qId];
+    if (pendingFiles[qId]) return true;
+    if (!ans) return false;
+    if (ans.type === "file") return Boolean(ans.fileName || (ans.value && ans.value.trim() !== ""));
+    return Boolean(ans.value && ans.value.trim() !== "");
+  };
+
+  const answeredCount = visibleQuestions.filter((question) => isQuestionAnswered(question.id)).length;
   const totalQuestions = visibleQuestions.length;
 
   return (
@@ -461,7 +469,7 @@ function TambahLaporanContent() {
               
               <div className="grid grid-cols-5 gap-3 mb-8">
                 {visibleQuestions.map((q, idx) => {
-                  const isAnswered = answers[q.id] && answers[q.id].value !== "";
+                  const isAnswered = isQuestionAnswered(q.id);
                   return (
                     <div 
                       key={q.id}

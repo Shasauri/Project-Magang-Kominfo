@@ -5,7 +5,10 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const state = searchParams.get("state");
 
-  const target = new URL("/auth/google/callback", request.url);
+  // Read actual Host header sent by browser (e.g. localhost:3000) to prevent redirecting to 0.0.0.0 inside Docker
+  const host = request.headers.get("host") || "localhost:3000";
+  const protocol = request.headers.get("x-forwarded-proto") || "http";
+  const target = new URL("/auth/google/callback", `${protocol}://${host}`);
 
   if (code) {
     target.searchParams.set("code", code);
