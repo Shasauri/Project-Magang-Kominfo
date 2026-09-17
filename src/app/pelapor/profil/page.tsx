@@ -25,21 +25,25 @@ const readApiResponse = async (res: Response) => {
 const getAvatarUrl = (avatarUrl: string | null | undefined, version = 0) => {
   if (!avatarUrl) return "/images/user.png";
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
   const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
-  let resolvedUrl = avatarUrl;
 
-  try {
-    const parsedUrl = new URL(avatarUrl, apiOrigin || window.location.origin);
-    if (parsedUrl.hostname === "localhost" || parsedUrl.hostname === "127.0.0.1") {
-      const configuredOrigin = new URL(apiOrigin).origin;
-      parsedUrl.protocol = new URL(configuredOrigin).protocol;
-      parsedUrl.host = new URL(configuredOrigin).host;
+  let cleanPath = avatarUrl;
+
+  if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://")) {
+    try {
+      const u = new URL(avatarUrl);
+      cleanPath = u.pathname + u.search;
+    } catch {
+      cleanPath = avatarUrl;
     }
-    resolvedUrl = parsedUrl.toString();
-  } catch {
-    resolvedUrl = avatarUrl;
   }
+
+  if (!cleanPath.startsWith("/")) {
+    cleanPath = "/" + cleanPath;
+  }
+
+  const resolvedUrl = `${apiOrigin}${cleanPath}`;
 
   return version ? `${resolvedUrl}${resolvedUrl.includes("?") ? "&" : "?"}v=${version}` : resolvedUrl;
 };
