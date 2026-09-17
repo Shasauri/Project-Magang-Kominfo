@@ -175,10 +175,12 @@ export default function DetailEditLaporanPage() {
         }));
       } else {
         const err = await res.json();
+        alert(err.message || "Gagal mengunggah file. Pastikan format PDF & maks 5MB.");
         setFileErrors(prev => ({ ...prev, [qId]: err.message || "Gagal mengunggah file. Pastikan format PDF & maks 5MB." }));
       }
     } catch (error) {
       console.error(error);
+      alert("Terjadi kesalahan jaringan saat mengunggah file.");
       setFileErrors(prev => ({ ...prev, [qId]: "Terjadi kesalahan jaringan saat mengunggah file." }));
     } finally {
       setUploadingFiles(prev => ({ ...prev, [qId]: false }));
