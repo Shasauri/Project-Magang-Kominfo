@@ -78,6 +78,7 @@ function TambahLaporanContent() {
   const [answers, setAnswers] = useState<{ [key: number]: { value: string, type: string, fileName?: string } }>({});
   const [pendingFiles, setPendingFiles] = useState<{ [key: number]: File }>({});
   const [uploadingFiles] = useState<{ [key: number]: boolean }>({});
+  const [fileErrors, setFileErrors] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
     const fetchMediaTypes = async () => {
@@ -183,6 +184,27 @@ function TambahLaporanContent() {
   };
 
   const handleFileUpload = async (qId: number, file: File) => {
+    const MAX_SIZE_MB = 5;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
+    // Validasi tipe file
+    if (file.type !== "application/pdf") {
+      setFileErrors(prev => ({ ...prev, [qId]: "Hanya file PDF yang diizinkan." }));
+      setPendingFiles(prev => { const next = { ...prev }; delete next[qId]; return next; });
+      setAnswers(prev => { const next = { ...prev }; delete next[qId]; return next; });
+      return;
+    }
+
+    // Validasi ukuran file (maks 5 MB)
+    if (file.size > MAX_SIZE_BYTES) {
+      setFileErrors(prev => ({ ...prev, [qId]: `Ukuran file melebihi batas maksimal ${MAX_SIZE_MB} MB. Ukuran file saat ini: ${(file.size / 1024 / 1024).toFixed(2)} MB.` }));
+      setPendingFiles(prev => { const next = { ...prev }; delete next[qId]; return next; });
+      setAnswers(prev => { const next = { ...prev }; delete next[qId]; return next; });
+      return;
+    }
+
+    // File valid — hapus error lama lalu simpan
+    setFileErrors(prev => { const next = { ...prev }; delete next[qId]; return next; });
     setPendingFiles(prev => ({ ...prev, [qId]: file }));
     setAnswers(prev => ({ ...prev, [qId]: { value: "", type: "file", fileName: file.name } }));
   };
@@ -442,6 +464,12 @@ function TambahLaporanContent() {
                               </span>
                             )}
                           </div>
+                          {fileErrors[q.id] && (
+                            <p className="mt-2 text-xs font-semibold text-red-500 flex items-center gap-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0"><path fillRule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clipRule="evenodd" /></svg>
+                              {fileErrors[q.id]}
+                            </p>
+                          )}
                         </div>
                       )}
 
