@@ -1,6 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 // Helper untuk mengambil token dari cookies
 const getCookie = (name: string) => {
@@ -214,12 +224,12 @@ export default function DaftarPenggunaPage() {
             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
             </div>
-            <input
+            <Input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Cari nama pengguna, id, status..."
-              className="block w-full rounded-xl border border-slate-200 pl-11 pr-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors bg-slate-50/50"
+              className="h-auto rounded-xl bg-slate-50/50 py-2.5 pl-11 pr-4 text-sm"
             />
           </div>
           <div className="relative w-full sm:w-48">
@@ -275,20 +285,20 @@ export default function DaftarPenggunaPage() {
                       <td className="px-6 py-4 text-slate-500 font-medium">{userId}</td>
                       <td className="px-6 py-4 text-slate-800 font-medium">{user.email}</td>
                       <td className="px-6 py-4 text-center">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-md text-[11px] font-bold ${isAktif ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"}`}>
+                        <Badge variant="outline" className={isAktif ? "border-green-200 bg-green-50 px-3 py-1 text-[11px] font-bold text-green-600" : "border-red-200 bg-red-50 px-3 py-1 text-[11px] font-bold text-red-600"}>
                           {isAktif ? "Aktif" : "Non Aktif"}
-                        </span>
+                        </Badge>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-2">
                           {/* Tombol Edit memanggil openEditModal */}
-                          <button onClick={() => openEditModal(user)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-md transition-colors" title="Edit">
+                          <Button variant="ghost" size="icon-sm" onClick={() => openEditModal(user)} className="text-blue-500 hover:bg-blue-50 hover:text-blue-600" title="Edit" aria-label={`Edit pengguna ${user.name}`}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
-                          </button>
+                          </Button>
                           {/* Tombol Hapus memanggil openDeleteModal */}
-                          <button onClick={() => openDeleteModal(user)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors" title="Hapus">
+                          <Button variant="ghost" size="icon-sm" onClick={() => openDeleteModal(user)} className="text-red-500 hover:bg-red-50 hover:text-red-600" title="Hapus" aria-label={`Hapus pengguna ${user.name}`}>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -305,36 +315,35 @@ export default function DaftarPenggunaPage() {
             Menampilkan {users.length > 0 ? (currentPage - 1) * perPage + 1 : 0} sampai {Math.min(currentPage * perPage, totalUsers)} dari total {totalUsers} pengguna
           </p>
           <div className="flex items-center gap-1">
-            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></button>
+            <Button variant="outline" size="icon-sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} aria-label="Halaman sebelumnya"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></Button>
             {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
               let pageNum = i + 1;
               if (totalPages > 5 && currentPage > 3) { pageNum = currentPage - 2 + i; if (pageNum > totalPages) return null; }
               return (
-                <button key={pageNum} onClick={() => setCurrentPage(pageNum)} className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${currentPage === pageNum ? "bg-blue-600 text-white border border-blue-600 shadow-sm" : "border border-slate-200 text-slate-600 hover:bg-slate-50"}`}>{pageNum}</button>
+                <Button key={pageNum} variant={currentPage === pageNum ? "default" : "outline"} size="icon-sm" onClick={() => setCurrentPage(pageNum)} className={currentPage === pageNum ? "border-blue-600 bg-blue-600 text-xs font-bold text-white hover:bg-blue-700" : "text-xs font-bold text-slate-600 hover:bg-slate-50"}>{pageNum}</Button>
               );
             })}
-            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0} className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg></button>
+            <Button variant="outline" size="icon-sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || totalPages === 0} aria-label="Halaman berikutnya"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg></Button>
           </div>
         </div>
       </div>
 
       {/* ---------------- MODAL EDIT USER ---------------- */}
       {isEditModalOpen && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+        <Dialog open={isEditModalOpen} onOpenChange={(open) => !open && closeModal()}>
+          <DialogContent className="max-h-[90vh] max-w-3xl overflow-hidden rounded-3xl p-0">
             
             {/* Header Modal */}
             <div className="p-8 pb-6 relative flex items-center gap-6 border-b border-slate-100">
-              <button onClick={closeModal} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-              </button>
-              
               <div className="w-20 h-20 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
               </div>
               
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">{selectedUser.name}</h2>
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-slate-900">{selectedUser.name}</DialogTitle>
+                  <DialogDescription className="sr-only">Edit status dan detail pengguna</DialogDescription>
+                </DialogHeader>
                 <div className="flex items-center gap-4 mt-1">
                   <span className="text-sm font-medium text-slate-500">ID : {selectedUser.employee_id || selectedUser.id_number || selectedUser.id}</span>
                   <span className={`flex items-center gap-1.5 text-xs font-bold ${editStatus === "aktif" ? "text-green-600" : "text-red-600"}`}>
@@ -418,24 +427,24 @@ export default function DaftarPenggunaPage() {
               
               {/* Tombol Simpan */}
               <div className="pt-4 flex justify-end">
-                <button
+                <Button
                   onClick={handleUpdateStatus}
                   disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-xl text-sm transition-colors disabled:opacity-50"
+                  className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700"
                 >
                   {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
-                </button>
+                </Button>
               </div>
 
             </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* ---------------- MODAL HAPUS USER ---------------- */}
       {isDeleteModalOpen && selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm shadow-xl overflow-hidden p-8 text-center">
+        <Dialog open={isDeleteModalOpen} onOpenChange={(open) => !open && closeModal()}>
+          <DialogContent className="max-w-sm rounded-3xl p-8 text-center">
             
             <div className="mx-auto w-16 h-16 rounded-full bg-red-50 border border-red-100 flex items-center justify-center text-red-500 mb-5">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
@@ -452,24 +461,26 @@ export default function DaftarPenggunaPage() {
             </p>
             
             <div className="flex items-center gap-3 w-full">
-              <button 
+              <Button
+                variant="outline"
                 onClick={closeModal} 
                 disabled={isSubmitting}
-                className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
+                className="flex-1 rounded-xl px-4 py-3 text-sm"
               >
                 Batal
-              </button>
-              <button 
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleDeleteUser} 
                 disabled={isSubmitting}
-                className="flex-1 py-3 px-4 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm text-white hover:bg-red-700"
               >
                 {isSubmitting ? "Proses..." : "Ya, Hapus Data"}
-              </button>
+              </Button>
             </div>
             
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
 
     </div>

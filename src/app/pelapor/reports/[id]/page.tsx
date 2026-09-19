@@ -3,6 +3,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Helper Token
 const getCookie = (name: string) => {
@@ -298,23 +302,26 @@ export default function DetailEditLaporanPage() {
   return (
     <div className="flex w-full h-full relative bg-slate-50">
       {isSaveSuccessOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 p-4">
-          <div className="flex min-h-[153px] w-full max-w-sm flex-col items-center justify-center rounded-2xl bg-white px-8 py-6 text-center shadow-xl">
+        <Dialog open={isSaveSuccessOpen} onOpenChange={(open) => !open && setIsSaveSuccessOpen(false)}>
+          <DialogContent className="max-w-sm rounded-2xl px-8 py-6 text-center">
             <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-500">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m5 12 4 4L19 6" />
               </svg>
             </div>
-            <p className="text-sm font-bold text-slate-900">Perubahan Berhasil Disimpan</p>
-            <button
+            <DialogHeader>
+              <DialogTitle className="text-sm font-bold text-slate-900">Perubahan Berhasil Disimpan</DialogTitle>
+              <DialogDescription className="sr-only">Perubahan laporan berhasil disimpan</DialogDescription>
+            </DialogHeader>
+            <Button
               type="button"
               onClick={handleSaveSuccessConfirm}
-              className="mt-5 w-28 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-700"
+              className="mt-5 w-28 self-center rounded-lg bg-blue-600 px-4 py-2 text-xs text-white hover:bg-blue-700"
             >
               OK
-            </button>
-          </div>
-        </div>
+            </Button>
+          </DialogContent>
+        </Dialog>
       )}
       
       {/* ================= MAIN CONTENT KIRI ================= */}
@@ -332,7 +339,7 @@ export default function DetailEditLaporanPage() {
         </div>
 
         {/* Info Card (Sesuai Gambar Terbaru) */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex items-center justify-between mb-8 max-w-4xl">
+        <Card className="mb-8 flex max-w-4xl flex-row items-center justify-between rounded-2xl border border-slate-100 p-6">
           <div className="flex items-center gap-5">
             <div className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600 shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>
@@ -343,10 +350,10 @@ export default function DetailEditLaporanPage() {
             </div>
           </div>
           
-          <div className="px-5 py-2.5 bg-orange-400 text-white rounded-lg text-[11px] font-bold shadow-sm capitalize">
+          <Badge variant="outline" className="rounded-lg border-orange-300 bg-orange-400 px-5 py-2.5 text-[11px] font-bold text-white shadow-sm capitalize">
             Status Laporan: {reportData.status}
-          </div>
-        </div>
+          </Badge>
+        </Card>
 
         {/* List Pertanyaan Form */}
         <div className="space-y-6 max-w-4xl">
@@ -357,7 +364,7 @@ export default function DetailEditLaporanPage() {
             const isUploading = uploadingFiles[q.id];
 
             return (
-              <div key={q.id} className={`bg-white rounded-3xl p-6 shadow-sm border ${isEditing ? 'border-blue-100 ring-1 ring-blue-50' : 'border-slate-100'} transition-all`}>
+              <Card key={q.id} className={`rounded-3xl border p-6 ${isEditing ? 'border-blue-100 ring-1 ring-blue-50' : 'border-slate-100'} transition-all`}>
                 <h4 className="text-sm font-bold text-slate-800 mb-4">
                   {idx + 1}. {q.question_text} {q.is_mandatory && <span className="text-red-500">*</span>}
                 </h4>
@@ -452,7 +459,7 @@ export default function DetailEditLaporanPage() {
                     />
                   )}
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
@@ -462,7 +469,7 @@ export default function DetailEditLaporanPage() {
       <aside className="hidden xl:block w-[340px] bg-slate-50 border-l border-slate-200 p-8 sticky top-0 h-[calc(100vh-88px)] flex-shrink-0">
         
         {/* Card Tracker Pertanyaan */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 flex flex-col mb-4">
+        <Card className="mb-4 flex flex-col rounded-3xl border border-slate-100 p-6">
           <h4 className="font-bold text-sm text-slate-800 mb-6">Pertanyaan yang Terjawab</h4>
           
           <div className="grid grid-cols-5 gap-3">
@@ -482,7 +489,7 @@ export default function DetailEditLaporanPage() {
               );
             })}
           </div>
-        </div>
+        </Card>
 
         {/* Kumpulan Tombol Aksi (Tampil berdasarkan State Edit) */}
         <div className="flex flex-col gap-3">

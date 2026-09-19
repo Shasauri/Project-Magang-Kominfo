@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // Helper untuk membaca token
 const getCookie = (name: string) => {
@@ -326,22 +329,22 @@ export default function ProfilPage() {
           <form onSubmit={handleUpdateProfile}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-2">Username</label>
-                <input 
+                <Label className="mb-2">Username</Label>
+                <Input
                   type="text" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="block w-full rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
+                  className="h-auto rounded-xl px-4 py-3 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-2">Hak Akses Sistem</label>
+                <Label className="mb-2">Hak Akses Sistem</Label>
                 <div className="relative">
-                  <input 
+                  <Input
                     type="text" 
                     disabled 
                     value="Admin" 
-                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 cursor-not-allowed outline-none"
+                    className="h-auto rounded-xl bg-slate-50 px-4 py-3 text-sm"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
@@ -349,28 +352,28 @@ export default function ProfilPage() {
                 </div>
               </div>
               <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-600 mb-2">Alamat Email</label>
+                <Label className="mb-2">Alamat Email</Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                   </div>
-                  <input 
+                  <Input
                     type="email" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 py-3 text-sm text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-colors"
+                    className="h-auto rounded-xl bg-slate-50 py-3 pl-11 pr-4 text-sm"
                   />
                 </div>
               </div>
             </div>
             <div className="flex justify-end">
-              <button 
+              <Button
                 type="submit"
                 disabled={isSavingProfile}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-6 rounded-xl shadow-sm transition-colors disabled:opacity-50"
+                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700"
               >
                 {isSavingProfile ? "Menyimpan..." : "Simpan Perubahan"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -387,15 +390,15 @@ export default function ProfilPage() {
               
               {/* Kata Sandi Saat Ini */}
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-2">Kata Sandi Saat Ini</label>
+                <Label className="mb-2">Kata Sandi Saat Ini</Label>
                 <div className="relative">
-                  <input 
+                  <Input
                     type={showCurrent ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="Masukkan kata sandi saat ini..."
                     required
-                    className="block w-full rounded-xl border border-slate-200 px-4 py-3 pr-10 text-sm text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-slate-400"
+                    className="h-auto rounded-xl px-4 py-3 pr-10 text-sm"
                   />
                   <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600">
                     {showCurrent ? (
@@ -409,15 +412,15 @@ export default function ProfilPage() {
 
               {/* Kata Sandi Baru */}
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-2">Kata Sandi Baru</label>
+                <Label className="mb-2">Kata Sandi Baru</Label>
                 <div className="relative">
-                  <input 
+                  <Input
                     type={showNew ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Masukkan kata sandi baru..."
                     required
-                    className="block w-full rounded-xl border border-slate-200 px-4 py-3 pr-10 text-sm text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-slate-400"
+                    className="h-auto rounded-xl px-4 py-3 pr-10 text-sm"
                   />
                   <button type="button" onClick={() => setShowNew(!showNew)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600">
                     {showNew ? (
@@ -431,15 +434,15 @@ export default function ProfilPage() {
 
               {/* Konfirmasi Kata Sandi Baru */}
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-2">Konfirmasi Kata Sandi Baru</label>
+                <Label className="mb-2">Konfirmasi Kata Sandi Baru</Label>
                 <div className="relative">
-                  <input 
+                  <Input
                     type={showConfirm ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Ulangi kata sandi baru..."
                     required
-                    className="block w-full rounded-xl border border-slate-200 px-4 py-3 pr-10 text-sm text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none placeholder:text-slate-400"
+                    className="h-auto rounded-xl px-4 py-3 pr-10 text-sm"
                   />
                   <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600">
                     {showConfirm ? (
@@ -454,13 +457,14 @@ export default function ProfilPage() {
             </div>
             
             <div className="flex justify-end">
-              <button 
+              <Button
                 type="submit"
                 disabled={isSavingPassword}
-                className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-semibold py-2.5 px-6 rounded-xl shadow-sm transition-colors disabled:opacity-50"
+                variant="outline"
+                className="rounded-xl px-6 py-2.5 text-sm"
               >
                 {isSavingPassword ? "Memproses..." : "Perbarui Password"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

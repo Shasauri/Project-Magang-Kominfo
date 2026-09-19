@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -95,12 +98,12 @@ export default function ForgotPasswordPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-xs font-semibold text-slate-700">Email</label>
-              <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Masukkan email" required className="mt-2 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-3 text-sm text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Masukkan email" required className="mt-2 bg-slate-50/50" />
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3">
-              <label htmlFor="captcha" className="mb-2 block text-xs font-semibold text-slate-700">Masukkan Kode Keamanan</label>
+              <Label htmlFor="captcha" className="mb-2">Masukkan Kode Keamanan</Label>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
                   <div className="flex h-[54px] w-full items-center justify-center overflow-hidden rounded-lg border border-slate-300 bg-white">
@@ -110,11 +113,11 @@ export default function ForgotPasswordPage() {
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5"><path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
                   </button>
                 </div>
-                <input id="captcha" type="text" value={captcha} onChange={(event) => setCaptcha(event.target.value)} placeholder="Ketik 6 karakter" maxLength={6} required className="block w-full rounded-lg border border-slate-300 px-3 py-3 text-center font-mono text-sm font-bold uppercase tracking-[0.4em] text-slate-900 placeholder-slate-400 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                <Input id="captcha" type="text" value={captcha} onChange={(event) => setCaptcha(event.target.value)} placeholder="Ketik 6 karakter" maxLength={6} required className="text-center font-mono font-bold uppercase tracking-[0.4em]" />
               </div>
             </div>
 
-            <button type="submit" disabled={isLoading} className="flex w-full justify-center rounded-xl bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400">{isLoading ? "Memproses..." : "Kirim Tautan Reset"}</button>
+            <Button type="submit" disabled={isLoading} className="w-full bg-[#2563eb] text-white hover:bg-blue-700 disabled:bg-blue-400">{isLoading ? "Memproses..." : "Kirim Tautan Reset"}</Button>
           </form>
           <p className="mt-6 text-center text-xs text-slate-500">Kembali ke halaman <Link href="/login" className="font-semibold text-blue-600 hover:text-blue-500">Masuk</Link></p>
         </div>

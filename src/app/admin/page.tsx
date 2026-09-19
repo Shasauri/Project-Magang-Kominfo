@@ -4,6 +4,15 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const getCookie = (name: string) => {
   if (typeof document === "undefined") return null;
@@ -297,7 +306,7 @@ export default function DashboardPage() {
 
         {/* Card Widgets */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
+          <Card className="flex flex-row items-center gap-5 rounded-2xl border border-slate-100 p-6">
             <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" /></svg>
             </div>
@@ -306,9 +315,9 @@ export default function DashboardPage() {
               <h3 className="text-2xl font-bold text-slate-800">{dashboardData.total_users}</h3>
               <p className="text-[10px] text-slate-400 mt-1">Data User Pelapor</p>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-5">
+          <Card className="flex flex-row items-center gap-5 rounded-2xl border border-slate-100 p-6">
             <div className="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center text-orange-400 flex-shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path fillRule="evenodd" d="M7.5 5.25a3 3 0 0 1 3-3h3a3 3 0 0 1 3 3v.205c.933.085 1.857.197 2.774.334 1.454.218 2.476 1.483 2.476 2.917v3.033c0 1.211-.734 2.352-1.936 2.752A24.726 24.726 0 0 1 12 15.75c-2.73 0-5.36-.442-7.814-1.259-1.202-.4-1.936-1.541-1.936-2.752V8.706c0-1.434 1.022-2.7 2.476-2.917A48.814 48.814 0 0 1 7.5 5.455V5.25Zm7.5 0v.25a49.112 49.112 0 0 0-6 0v-.25a1.5 1.5 0 0 1 1.5-1.5h3a1.5 1.5 0 0 1 1.5 1.5Zm-3 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" /><path d="M3 18.4v-2.796a4.3 4.3 0 0 0 .713.31A26.226 26.226 0 0 0 12 17.25c2.892 0 5.68-.468 8.287-1.335.252-.084.49-.189.713-.311V18.4c0 1.452-1.047 2.728-2.523 2.923-2.12.282-4.282.427-6.477.427-2.195 0-4.356-.145-6.477-.427C4.047 21.128 3 19.852 3 18.4Z" /></svg>
             </div>
@@ -317,7 +326,7 @@ export default function DashboardPage() {
               <h3 className="text-2xl font-bold text-slate-800">{dashboardData.total_reports}</h3>
               <p className="text-[10px] text-slate-400 mt-1">Seluruh Data Laporan Media</p>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Tabel Laporan */}
@@ -377,15 +386,15 @@ export default function DashboardPage() {
                       <td className="break-words py-4 text-center font-semibold text-slate-700">{item.total_score}</td>
                       
                       <td className="py-4 text-center">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold ${
-                          item.status === 'disetujui' ? 'bg-green-100 text-green-700' : 
-                          item.status === 'proses' ? 'bg-orange-100 text-orange-700' :
-                          'bg-red-100 text-red-700'
+                        <Badge variant="outline" className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${
+                          item.status === 'disetujui' ? 'border-green-200 bg-green-100 text-green-700' : 
+                          item.status === 'proses' ? 'border-orange-200 bg-orange-100 text-orange-700' :
+                          'border-red-200 bg-red-100 text-red-700'
                         }`}>
                           {item.status === 'disetujui' ? 'Di Verifikasi' : 
                            item.status === 'proses' ? 'Di Proses' : 
                            'Pending'}
-                        </span>
+                        </Badge>
                       </td>
                       
                       <td className="py-4 text-center">
@@ -410,7 +419,7 @@ export default function DashboardPage() {
 
       {/* SIDEBAR KANAN (Kalender & Status) */}
       <aside className="hidden xl:block w-[400px] shrink-0 bg-slate-50 border-l border-slate-200 p-8 sticky top-0 h-[calc(100vh-88px)]">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
+        <Card className="mb-6 rounded-2xl border border-slate-100 p-6">
           <div className="flex items-center justify-between mb-2">
             <h4 className="font-semibold text-sm text-blue-600">Kalender</h4>
           </div>
@@ -430,9 +439,9 @@ export default function DashboardPage() {
           <div className="flex justify-center text-sm">
             <DayPicker mode="single" selected={selectedDate} onSelect={setSelectedDate} showOutsideDays className="text-slate-700 w-full" />
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <Card className="rounded-2xl border border-slate-100 p-6">
           <div className="mb-4">
             <h4 className="font-semibold text-sm text-slate-800">Status Laporan</h4>
             <p className="text-[10px] text-slate-400">Rekap Status laporan</p>
@@ -457,13 +466,13 @@ export default function DashboardPage() {
               <span className="text-xs font-bold bg-slate-200 text-slate-600 px-3 py-1 rounded-full">{dashboardData.pending_reports || 0}</span>
             </div>
           </div>
-        </div>
+        </Card>
       </aside>
 
       {/* ================= MODAL CETAK & UBAH STATUS (AUTO-SAVE) ================= */}
       {isPrintModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-xl flex flex-col max-h-[90vh] overflow-hidden relative">
+        <Dialog open={isPrintModalOpen} onOpenChange={(open) => !open && closePrintModal()}>
+          <DialogContent className="max-h-[90vh] max-w-4xl overflow-hidden rounded-3xl p-0">
             
             {/* Header Modal */}
             <div className="p-8 pb-6 border-b border-slate-100 flex items-center justify-between relative">
@@ -472,13 +481,12 @@ export default function DashboardPage() {
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900">Cetak Hasil Laporan</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Lakukan Cetak Hasil Laporan</p>
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-bold text-slate-900">Cetak Hasil Laporan</DialogTitle>
+                    <DialogDescription className="mt-0.5 text-xs">Lakukan Cetak Hasil Laporan</DialogDescription>
+                  </DialogHeader>
                 </div>
               </div>
-              <button onClick={closePrintModal} className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-              </button>
             </div>
 
             {/* Indikator Loading Auto-Save */}
@@ -613,22 +621,15 @@ export default function DashboardPage() {
               </button>
             </div>
             
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
       {/* ================= MODAL CETAK REKAP LAPORAN ================= */}
       {isRecapModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden p-8 relative">
+        <Dialog open={isRecapModalOpen} onOpenChange={(open) => !open && setIsRecapModalOpen(false)}>
+          <DialogContent className="max-w-md rounded-3xl p-8">
             
             {/* Tombol Close */}
-            <button 
-              onClick={() => setIsRecapModalOpen(false)} 
-              className="absolute top-6 right-6 p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-            </button>
-
             {/* Header Modal */}
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
@@ -637,8 +638,10 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Cetak Rekap Laporan</h2>
-                <p className="text-xs text-slate-500 mt-0.5">Lakukan Cetak Hasil Laporan</p>
+                <DialogHeader>
+                  <DialogTitle className="text-lg font-bold text-slate-900">Cetak Rekap Laporan</DialogTitle>
+                  <DialogDescription className="mt-0.5 text-xs">Lakukan Cetak Hasil Laporan</DialogDescription>
+                </DialogHeader>
               </div>
             </div>
 
@@ -698,8 +701,8 @@ export default function DashboardPage() {
               </button>
             </div>
 
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
 
     </div>

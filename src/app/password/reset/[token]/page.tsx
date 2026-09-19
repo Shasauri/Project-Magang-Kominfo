@@ -3,6 +3,9 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 type ResetPasswordContentProps = {
   initialToken?: string;
@@ -77,7 +80,7 @@ export function ResetPasswordContent({ initialToken, initialEmail }: ResetPasswo
         {message ? <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{message}</div> : <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <PasswordField id="password" label="Kata Sandi Baru" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword(!showPassword)} />
           <PasswordField id="confirmation" label="Konfirmasi Kata Sandi" value={confirmation} onChange={setConfirmation} visible={showConfirmation} onToggle={() => setShowConfirmation(!showConfirmation)} />
-          <button type="submit" disabled={isLoading} className="flex w-full justify-center rounded-xl bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400">{isLoading ? "Memproses..." : "Simpan Kata Sandi"}</button>
+          <Button type="submit" disabled={isLoading} className="w-full">{isLoading ? "Memproses..." : "Simpan Kata Sandi"}</Button>
         </form>}
         <p className="mt-6 text-center text-xs text-slate-500"><Link href="/login" className="font-semibold text-blue-600 hover:text-blue-500">Kembali ke halaman Masuk</Link></p>
       </div>
@@ -94,5 +97,5 @@ export default function ResetPasswordPage() {
 }
 
 function PasswordField({ id, label, value, onChange, visible, onToggle }: { id: string; label: string; value: string; onChange: (value: string) => void; visible: boolean; onToggle: () => void }) {
-  return <div><label htmlFor={id} className="block text-xs font-semibold text-slate-700">{label}</label><div className="relative mt-2"><input id={id} type={visible ? "text" : "password"} value={value} onChange={(event) => onChange(event.target.value)} required className="block w-full rounded-xl border border-slate-200 px-3 py-3 pr-10 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" /><button type="button" onClick={onToggle} aria-label={visible ? `Sembunyikan ${label}` : `Tampilkan ${label}`} className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"><span aria-hidden="true">{visible ? "◉" : "○"}</span></button></div></div>;
+  return <div><Label htmlFor={id}>{label}</Label><div className="relative mt-2"><Input id={id} type={visible ? "text" : "password"} value={value} onChange={(event) => onChange(event.target.value)} required className="pr-10" /><button type="button" onClick={onToggle} aria-label={visible ? `Sembunyikan ${label}` : `Tampilkan ${label}`} className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"><span aria-hidden="true">{visible ? "◉" : "○"}</span></button></div></div>;
 }

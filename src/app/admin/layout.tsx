@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Helper untuk membaca token
 const getCookie = (name: string) => {
@@ -173,13 +175,14 @@ export default function AdminLayout({
               </Link>
 
               {/* Tombol memicu Pop-Up dengan gaya latar merah sesuai gambar terbaru */}
-              <button 
+              <Button
                 onClick={() => setIsLogoutModalOpen(true)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500  hover:bg-red-600  transition-all text-left w-full mt-1"
+                variant="ghost"
+                className="mt-1 flex w-full items-center justify-start gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-500 hover:bg-red-600 hover:text-white"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" /></svg>
                 Keluar Akun
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -192,15 +195,17 @@ export default function AdminLayout({
         {/* Topbar */}
         <header className="h-24 px-8 flex items-center shrink-0">
           <div className="flex items-center gap-4">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100"
+              className="text-slate-400 hover:bg-slate-100 hover:text-slate-600"
               title="Tampilkan/Sembunyikan Sidebar"
               aria-label="Tampilkan atau sembunyikan sidebar"
               aria-expanded={isSidebarOpen}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" /></svg>
-            </button>
+            </Button>
             <h1 className="text-2xl font-bold text-blue-600">{getPageTitle()}</h1>
           </div>
         </header>
@@ -214,8 +219,8 @@ export default function AdminLayout({
 
       {/* ================= MODAL KELUAR AKUN ================= */}
       {isLogoutModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm shadow-xl overflow-hidden p-8 text-center">
+        <Dialog open={isLogoutModalOpen} onOpenChange={(open) => !open && setIsLogoutModalOpen(false)}>
+          <DialogContent className="max-w-sm rounded-3xl p-8 text-center">
             
             {/* Ikon User Lingkaran Sesuai Gambar */}
             <div className="mx-auto w-16 h-16 rounded-full bg-red-50 border-2 border-red-100 flex items-center justify-center text-slate-700 mb-5">
@@ -224,32 +229,35 @@ export default function AdminLayout({
               </svg>
             </div>
             
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Konfirmasi Keluar</h3>
-            
-            <p className="text-xs text-slate-500 leading-relaxed mb-8">
+            <DialogHeader>
+              <DialogTitle className="mb-3 text-xl font-bold text-slate-900">Konfirmasi Keluar</DialogTitle>
+              <DialogDescription className="mb-8 text-xs leading-relaxed">
               Apakah Anda yakin ingin keluar dari akun ini?<br />
               <strong className="text-slate-800 text-sm block my-1">{userName}</strong>
               anda akan keluar dari akun ini<br />
               anda dapat login kembali nanti
-            </p>
+              </DialogDescription>
+            </DialogHeader>
             
             <div className="flex items-center gap-3 w-full">
-              <button 
+              <Button
+                variant="outline"
                 onClick={() => setIsLogoutModalOpen(false)} 
-                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
+                className="flex-1 rounded-xl px-4 py-2.5 text-sm"
               >
                 Batal
-              </button>
-              <button 
+              </Button>
+              <Button
+                variant="destructive"
                 onClick={handleLogout} 
-                className="flex-1 py-2.5 px-4 rounded-xl bg-red-600 text-white font-semibold text-sm hover:bg-red-700 transition-colors"
+                className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm text-white hover:bg-red-700"
               >
                 Log Out
-              </button>
+              </Button>
             </div>
             
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
 
     </div>

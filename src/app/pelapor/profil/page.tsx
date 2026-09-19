@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // Helper Token
 const getCookie = (name: string) => {
@@ -331,25 +334,25 @@ export default function ProfilPelaporPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {/* Username */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">Username</label>
-                <input 
+                <Label className="mb-2">Username</Label>
+                <Input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:border-blue-500 outline-none"
+                  className="h-auto rounded-xl bg-white px-4 py-3 text-sm"
                   required
                 />
               </div>
 
               {/* Hak Akses (Readonly) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">Hak Akses Sistem</label>
+                <Label className="mb-2">Hak Akses Sistem</Label>
                 <div className="relative">
-                  <input 
+                  <Input
                     type="text"
                     value="Pelapor"
                     disabled
-                    className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 cursor-not-allowed outline-none"
+                    className="h-auto rounded-xl bg-slate-50 px-4 py-3 text-sm"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
@@ -359,16 +362,16 @@ export default function ProfilPelaporPage() {
 
               {/* Alamat Email */}
               <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-700 mb-2">Alamat Email</label>
+                <Label className="mb-2">Alamat Email</Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                   </div>
-                  <input 
+                  <Input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 py-3 text-sm text-slate-700 focus:border-blue-500 outline-none"
+                    className="h-auto rounded-xl bg-white py-3 pl-11 pr-4 text-sm"
                     required
                   />
                 </div>
@@ -376,16 +379,16 @@ export default function ProfilPelaporPage() {
             </div>
 
             <div className="flex justify-end">
-              <button 
+              <Button
                 type="submit"
                 disabled={isSavingProfile}
-                className="py-2.5 px-6 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700"
               >
                 {isSavingProfile && (
                   <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 )}
                 Simpan Perubahan
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -402,14 +405,14 @@ export default function ProfilPelaporPage() {
               
               {/* Sandi Saat Ini */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-700 mb-2">Kata Sandi Saat Ini</label>
+                <Label className="mb-2 text-[10px]">Kata Sandi Saat Ini</Label>
                 <div className="relative">
-                  <input 
+                  <Input
                     type={showCurrentPassword ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="Masukkan kata sandi saat ini..."
-                    className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-xs text-slate-700 focus:border-blue-500 outline-none placeholder-slate-400"
+                    className="h-auto rounded-xl bg-slate-50/50 px-4 py-3 text-xs"
                     required
                   />
                   <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600">
@@ -424,14 +427,14 @@ export default function ProfilPelaporPage() {
 
               {/* Sandi Baru */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-700 mb-2">Kata Sandi Baru</label>
+                <Label className="mb-2 text-[10px]">Kata Sandi Baru</Label>
                 <div className="relative">
-                  <input 
+                  <Input
                     type={showNewPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Masukkan kata sandi baru..."
-                    className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-xs text-slate-700 focus:border-blue-500 outline-none placeholder-slate-400"
+                    className="h-auto rounded-xl bg-slate-50/50 px-4 py-3 text-xs"
                     required
                   />
                   <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600">
@@ -446,14 +449,14 @@ export default function ProfilPelaporPage() {
 
               {/* Konfirmasi Sandi Baru */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-700 mb-2">Konfirmasi Kata Sandi Baru</label>
+                <Label className="mb-2 text-[10px]">Konfirmasi Kata Sandi Baru</Label>
                 <div className="relative">
-                  <input 
+                  <Input
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Ulangi kata sandi baru..."
-                    className="block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-xs text-slate-700 focus:border-blue-500 outline-none placeholder-slate-400"
+                    className="h-auto rounded-xl bg-slate-50/50 px-4 py-3 text-xs"
                     required
                   />
                   <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600">
@@ -468,16 +471,17 @@ export default function ProfilPelaporPage() {
             </div>
 
             <div className="flex justify-end">
-              <button 
+              <Button
                 type="submit"
                 disabled={isSavingPassword}
-                className="py-2.5 px-6 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+                variant="outline"
+                className="rounded-xl px-6 py-2.5 text-sm"
               >
                 {isSavingPassword && (
                   <svg className="animate-spin h-4 w-4 text-slate-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 )}
                 {isSavingPassword ? "Memproses..." : "Perbarui Password"}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

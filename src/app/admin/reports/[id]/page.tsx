@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const getCookie = (name: string) => {
   if (typeof document === "undefined") return null;
@@ -140,7 +143,7 @@ export default function DetailLaporanAdminPage() {
 
         {/* Ringkasan laporan */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mb-5">
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+          <Card className="flex flex-row items-center gap-4 rounded-2xl border border-slate-100 p-5">
             <div className="w-12 h-12 rounded-xl border border-slate-200 flex items-center justify-center text-slate-700">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v16.5h16.5M7.5 16.5v-3m4.5 3V9m4.5 7.5V6" /></svg>
             </div>
@@ -148,8 +151,8 @@ export default function DetailLaporanAdminPage() {
               <p className="text-[10px] text-slate-500 font-medium">Total skor</p>
               <p className="text-2xl font-bold text-slate-800">{totalScore.toFixed(2)}</p>
             </div>
-          </div>
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+          </Card>
+          <Card className="flex flex-row items-center gap-4 rounded-2xl border border-slate-100 p-5">
             <div className="w-12 h-12 rounded-xl border border-slate-200 flex items-center justify-center text-slate-700">
               <Image src="/images/chat.png" alt="Ikon total pertanyaan" width={28} height={28} className="w-7 h-7 object-contain" />
             </div>
@@ -157,7 +160,7 @@ export default function DetailLaporanAdminPage() {
               <p className="text-[10px] text-slate-500 font-medium">Total pertanyaan</p>
               <p className="text-2xl font-bold text-slate-800">{answers.length}</p>
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* List Jawaban Form */}
@@ -172,7 +175,7 @@ export default function DetailLaporanAdminPage() {
             const hasScoringRules = scoringRules.length > 0;
 
             return (
-              <div key={idx} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+              <Card key={idx} className="rounded-2xl border border-slate-100 p-0">
                 <h4 className="text-[13px] font-bold text-slate-800 px-4 py-4 bg-white">
                   {idx + 1}. {qData.question_text || "Pertanyaan Tidak Diketahui"}
                 </h4>
@@ -233,7 +236,7 @@ export default function DetailLaporanAdminPage() {
                     </div>
                   )}
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>
@@ -241,19 +244,19 @@ export default function DetailLaporanAdminPage() {
 
       {/* ================= SIDEBAR KANAN (Info Panel) ================= */}
       <aside className="hidden xl:block w-[320px] bg-slate-50 p-8 sticky top-0 h-[calc(100vh-88px)] flex-shrink-0">
-        <div className="bg-white rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-slate-100 p-6">
+        <Card className="rounded-3xl border border-slate-100 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)]">
           <div className="flex items-start justify-between border-b border-slate-100 pb-5 mb-5">
             <div>
               <p className="font-bold text-sm text-slate-800">Status Laporan</p>
               <p className="text-[10px] text-slate-400 mt-0.5">Rekap Status laporan</p>
             </div>
-            <div className={`px-3 py-1 rounded-lg text-xs font-bold capitalize
+            <Badge variant="outline" className={`rounded-lg px-3 py-1 text-xs font-bold capitalize
               ${reportData.status === 'disetujui' ? 'bg-green-100 text-green-700' : 
                 reportData.status === 'proses' ? 'bg-yellow-100 text-yellow-700' : 
                 'bg-slate-100 text-slate-700'}
             `}>
               {reportData.status}
-            </div>
+            </Badge>
           </div>
           <div className="space-y-5 border-b border-slate-100 pb-5 mb-5">
             <div>
@@ -273,27 +276,23 @@ export default function DetailLaporanAdminPage() {
               <p className="text-[10px] text-slate-400 mt-0.5 truncate">{reportData.user?.email}</p>
             </div>
           </div>
-        </div>
+        </Card>
       </aside>
 
       {/* ================= MODAL PREVIEW PDF ================= */}
       {selectedPdfUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 md:p-8">
-          <div className="bg-white w-full max-w-5xl h-full flex flex-col rounded-2xl overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
+        <Dialog open={Boolean(selectedPdfUrl)} onOpenChange={(open) => !open && closePdfModal()}>
+          <DialogContent className="h-[calc(100vh-2rem)] max-w-5xl overflow-hidden rounded-2xl p-0 md:h-[calc(100vh-4rem)]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
                 </div>
-                <h3 className="font-bold text-slate-800">Pratinjau Dokumen PDF</h3>
+                <DialogHeader>
+                  <DialogTitle className="font-bold text-slate-800">Pratinjau Dokumen PDF</DialogTitle>
+                  <DialogDescription className="sr-only">Pratinjau dokumen lampiran laporan</DialogDescription>
+                </DialogHeader>
               </div>
-              <button 
-                onClick={closePdfModal}
-                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
-                title="Tutup Preview"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
-              </button>
             </div>
             <div className="flex-1 bg-slate-100/50 p-2 md:p-4">
               <iframe 
@@ -302,8 +301,8 @@ export default function DetailLaporanAdminPage() {
                 title="PDF Preview"
               />
             </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

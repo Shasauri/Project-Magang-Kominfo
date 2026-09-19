@@ -3,6 +3,11 @@
 import { Suspense, useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const getCookie = (name: string) => {
   if (typeof document === "undefined") return null;
@@ -330,9 +335,9 @@ function TambahLaporanContent() {
       {/* ================= TAHAP 1: MODAL PILIH MEDIA ================= */}
       {step === 1 && (
         <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-2xl shadow-xl overflow-hidden p-8">
+          <Card className="w-full max-w-2xl rounded-3xl p-8">
             <h2 className="text-xl font-bold text-slate-900">Tambah Laporan Media Baru</h2>
-            <p className="text-xs text-slate-500 mt-1 mb-8">Pilih jenis media dan nama media yang ingin dilaporkan</p>
+            <p className="mt-1 mb-8 text-xs text-slate-500">Pilih jenis media dan nama media yang ingin dilaporkan</p>
             
             <div className="space-y-6">
               <div>
@@ -370,15 +375,15 @@ function TambahLaporanContent() {
               <Link href="/pelapor" className="py-2.5 px-6 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors">
                 Batal
               </Link>
-              <button 
+              <Button
                 onClick={handleNextStep}
                 disabled={isLoading}
-                className="py-2.5 px-6 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700"
               >
                 {isLoading ? "Memproses..." : "Selanjutnya"}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
@@ -387,7 +392,7 @@ function TambahLaporanContent() {
         <>
           <main className="flex-1 px-8 lg:px-10 pb-10 pt-4 overflow-y-auto">
             {/* Header Form */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex items-center gap-5 mb-8 w-fit pr-16">
+            <Card className="mb-8 flex w-fit flex-row items-center gap-5 rounded-3xl border border-slate-100 p-6 pr-16">
               <div className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>
               </div>
@@ -395,7 +400,7 @@ function TambahLaporanContent() {
                 <p className="text-[10px] text-slate-500 font-medium">Pertanyaan yang dijawab</p>
                 <h3 className="text-2xl font-bold text-slate-800">{answeredCount}/{totalQuestions}</h3>
               </div>
-            </div>
+            </Card>
 
             {/* List Pertanyaan */}
             <div className="space-y-6">
@@ -406,30 +411,25 @@ function TambahLaporanContent() {
                 const isUploading = uploadingFiles[q.id];
 
                 return (
-                  <div key={q.id} className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                  <Card key={q.id} className="rounded-3xl border border-slate-100 p-6">
                     <h4 className="text-sm font-bold text-slate-800 mb-4">{idx + 1}. {q.question_text} {isRequiredQuestion(q) && <span className="text-red-500">*</span>}</h4>
                     <div className="border-t border-slate-100 pt-4">
                       <span className="text-[10px] font-bold text-blue-600 block mb-4">Jawaban</span>
                       
                       {/* Tipe: Radio Button */}
                       {hasOptions && (
-                        <div className="flex flex-col gap-3 pl-2">
+                        <RadioGroup
+                          value={ans?.value || ""}
+                          onValueChange={(value) => handleTextChange(q.id, value, q.question_text)}
+                          className="flex flex-col gap-3 pl-2"
+                        >
                           {q.scoring_rules.map((rule: any) => (
-                            <label key={rule.id} className="flex items-center gap-3 cursor-pointer group">
-                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${ans?.value === rule.answer_option ? 'border-blue-600' : 'border-slate-300'}`}>
-                                {ans?.value === rule.answer_option && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>}
-                              </div>
-                              <input 
-                                type="radio" 
-                                name={`q-${q.id}`} 
-                                value={rule.answer_option} 
-                                className="hidden"
-                                onChange={() => handleTextChange(q.id, rule.answer_option, q.question_text)}
-                              />
-                              <span className="text-xs font-semibold text-slate-700">{rule.answer_option}</span>
+                            <label key={rule.id} className="flex cursor-pointer items-center gap-3 text-xs font-semibold text-slate-700">
+                              <RadioGroupItem value={rule.answer_option} />
+                              {rule.answer_option}
                             </label>
                           ))}
-                        </div>
+                        </RadioGroup>
                       )}
 
                       {/* Tipe: File Upload */}
@@ -484,7 +484,7 @@ function TambahLaporanContent() {
                         />
                       )}
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
@@ -492,8 +492,9 @@ function TambahLaporanContent() {
 
           {/* SIDEBAR KANAN (Tracker Pertanyaan) */}
           <aside className="hidden xl:block w-[340px] bg-slate-50 border-l border-slate-200 p-8 sticky top-0 h-[calc(100vh-88px)]">
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 flex flex-col h-full">
+            <Card className="flex h-full flex-col rounded-3xl border border-slate-100 p-6">
               <h4 className="font-bold text-sm text-slate-800 mb-6">Pertanyaan yang Terjawab</h4>
+              <Progress value={totalQuestions ? (answeredCount / totalQuestions) * 100 : 0} className="mb-6" />
               
               <div className="grid grid-cols-5 gap-3 mb-8">
                 {visibleQuestions.map((q, idx) => {
@@ -514,49 +515,52 @@ function TambahLaporanContent() {
               </div>
 
               <div className="mt-auto">
-                <button 
+                <Button
                   onClick={() => setIsSubmitModalOpen(true)}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm py-3 rounded-xl transition-colors shadow-sm"
+                  className="w-full rounded-xl bg-blue-600 py-3 text-sm text-white hover:bg-blue-700"
                 >
                   Submit Laporan
-                </button>
+                </Button>
               </div>
-            </div>
+            </Card>
           </aside>
         </>
       )}
 
       {/* ================= MODAL SUBMIT LAPORAN ================= */}
       {isSubmitModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm shadow-xl overflow-hidden p-8 text-center">
-            <h3 className="text-lg font-bold text-slate-900 mb-3">Apakah kamu yakin ingin submit laporan??</h3>
-            <p className="text-[11px] text-slate-500 leading-relaxed mb-8 px-4">
+        <Dialog open={isSubmitModalOpen} onOpenChange={(open) => !open && setIsSubmitModalOpen(false)}>
+          <DialogContent className="max-w-sm rounded-3xl p-8 text-center">
+            <DialogHeader>
+              <DialogTitle className="mb-3 text-lg font-bold text-slate-900">Apakah kamu yakin ingin submit laporan?</DialogTitle>
+              <DialogDescription className="mb-8 px-4 text-[11px] leading-relaxed"> 
               Anda masih dapat mengedit nya selagi status dalam keadaan pending dan belum di proses
-            </p>
+              </DialogDescription>
+            </DialogHeader>
             
             <div className="flex items-center gap-3 w-full">
-              <button 
+              <Button
+                variant="outline"
                 onClick={() => setIsSubmitModalOpen(false)} 
                 disabled={isSubmitting}
-                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
+                className="flex-1 rounded-xl px-4 py-2.5 text-sm"
               >
                 Batal
-              </button>
-              <button 
+              </Button>
+              <Button
                 onClick={handleSubmitLaporan} 
                 disabled={isSubmitting}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors flex justify-center disabled:opacity-50"
+                className="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-sm text-white hover:bg-blue-700"
               >
                 {isSubmitting ? (
                   <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 ) : (
                   "Submit"
                 )}
-              </button>
+              </Button>
             </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* ================= NOTIFIKASI HASIL SUBMIT ================= */}
