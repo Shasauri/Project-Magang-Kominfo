@@ -335,7 +335,7 @@ function TambahLaporanContent() {
       {/* ================= TAHAP 1: MODAL PILIH MEDIA ================= */}
       {step === 1 && (
         <div className="absolute inset-0 z-10 flex items-center justify-center p-4">
-          <Card className="w-full max-w-2xl rounded-3xl p-8">
+          <Card className="w-full max-w-2xl rounded-3xl p-4 sm:p-6 lg:p-8">
             <h2 className="text-xl font-bold text-slate-900">Tambah Laporan Media Baru</h2>
             <p className="mt-1 mb-8 text-xs text-slate-500">Pilih jenis media dan nama media yang ingin dilaporkan</p>
             
@@ -371,14 +371,14 @@ function TambahLaporanContent() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-4 mt-10">
-              <Link href="/pelapor" className="py-2.5 px-6 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:gap-4 mt-8 sm:mt-10">
+              <Link href="/pelapor" className="w-full sm:w-auto py-2.5 px-6 text-center rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors">
                 Batal
               </Link>
               <Button
                 onClick={handleNextStep}
                 disabled={isLoading}
-                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700"
+                className="w-full sm:w-auto rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700"
               >
                 {isLoading ? "Memproses..." : "Selanjutnya"}
               </Button>
@@ -390,7 +390,7 @@ function TambahLaporanContent() {
       {/* ================= TAHAP 2: PENGISIAN FORM ================= */}
       {step === 2 && (
         <>
-          <main className="flex-1 px-8 lg:px-10 pb-10 pt-4 overflow-y-auto">
+          <main className="flex-1 px-4 sm:px-6 lg:px-10 pb-8 sm:pb-10 pt-4 overflow-y-auto">
             {/* Header Form */}
             <Card className="mb-8 flex w-fit flex-row items-center gap-5 rounded-3xl border border-slate-100 p-6 pr-16">
               <div className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center text-slate-600">

@@ -265,7 +265,7 @@ export default function ProfilPelaporPage() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 p-8 h-full bg-slate-50 overflow-y-auto">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 p-4 sm:p-6 lg:p-8 h-full bg-slate-50 overflow-y-auto">
       {successMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/25 p-4">
           <div className="flex min-h-[120px] w-full max-w-sm flex-col items-center justify-center rounded-xl bg-white px-6 py-5 text-center shadow-xl">
@@ -285,7 +285,7 @@ export default function ProfilPelaporPage() {
       )}
       
       {/* ================= BAGIAN KIRI: KARTU PROFIL ================= */}
-      <div className="w-full lg:w-[320px] bg-[#EEF5FF] rounded-3xl p-10 flex flex-col items-center justify-center h-fit shadow-sm shrink-0">
+      <div className="w-full lg:w-[320px] bg-[#EEF5FF] rounded-3xl p-6 sm:p-10 flex flex-col items-center justify-center h-fit shadow-sm shrink-0">
         <div className="relative mb-6">
           <div className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-slate-100 bg-white shadow-sm">
             <Image
@@ -324,7 +324,7 @@ export default function ProfilPelaporPage() {
       <div className="flex-1 flex flex-col gap-6 max-w-4xl">
         
         {/* Form Informasi Pribadi */}
-        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+        <div className="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 border border-slate-100 shadow-sm">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-900">Informasi Pribadi</h3>
             <p className="text-xs text-slate-500 mt-1">Kelola data diri dasar untuk akun SIFOKAM Anda.</p>
@@ -394,7 +394,7 @@ export default function ProfilPelaporPage() {
         </div>
 
         {/* Form Ubah Kata Sandi */}
-        <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+        <div className="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 border border-slate-100 shadow-sm">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-900">Ubah Kata Sandi Akun</h3>
             <p className="text-xs text-slate-500 mt-1">Perbarui kata sandi Anda untuk menjaga keamanan.</p>

@@ -301,7 +301,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex w-full h-full relative">
-      <main className="flex-1 min-w-0 px-8 lg:px-10 pb-10 pt-2">
+      <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-10 pb-8 sm:pb-10 pt-2">
         <h2 className="text-xl font-bold text-slate-800 mb-6">Selamat Datang, {userName}!</h2>
 
         {/* Card Widgets */}
@@ -330,7 +330,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Tabel Laporan */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 lg:p-8">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-bold text-slate-800">Daftar laporan media</h3>

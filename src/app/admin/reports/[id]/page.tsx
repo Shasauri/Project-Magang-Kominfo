@@ -124,7 +124,7 @@ export default function DetailLaporanAdminPage() {
     <div className="flex w-full h-full relative bg-slate-50">
       
       {/* ================= MAIN CONTENT (Daftar Form) ================= */}
-      <main className="flex-1 px-8 lg:px-10 pb-10 pt-4 overflow-y-auto">
+      <main className="flex-1 px-4 sm:px-6 lg:px-10 pb-8 sm:pb-10 pt-4 overflow-y-auto">
         
         {/* Header laporan */}
         <div className="flex items-center justify-between mb-6">

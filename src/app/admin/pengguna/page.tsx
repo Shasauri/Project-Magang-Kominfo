@@ -215,9 +215,9 @@ export default function DaftarPenggunaPage() {
   };
 
   return (
-    <div className="p-8 lg:p-10 w-full relative">
+    <div className="p-4 sm:p-6 lg:p-10 w-full relative">
       {/* ---------------- BAGIAN UTAMA (TABEL) ---------------- */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 min-h-[500px] flex flex-col">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 lg:p-8 min-h-[500px] flex flex-col">
         {/* Baris Pencarian & Filter */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-1 max-w-md">

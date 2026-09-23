@@ -325,7 +325,7 @@ export default function DetailEditLaporanPage() {
       )}
       
       {/* ================= MAIN CONTENT KIRI ================= */}
-      <main className="flex-1 px-8 lg:px-10 pb-10 pt-4 overflow-y-auto">
+      <main className="flex-1 px-4 sm:px-6 lg:px-10 pb-8 sm:pb-10 pt-4 overflow-y-auto">
         
         {/* Header Title (Pengisian Form) */}
         <div className="flex items-center justify-between mb-6">

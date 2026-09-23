@@ -262,11 +262,11 @@ export default function ProfilPage() {
   };
 
   if (isLoading) {
-    return <div className="p-10 text-center text-slate-500">Memuat profil...</div>;
+    return <div className="p-4 sm:p-6 lg:p-10 text-center text-slate-500">Memuat profil...</div>;
   }
 
   return (
-    <div className="p-8 lg:p-10 w-full flex flex-col lg:flex-row gap-8 items-start">
+    <div className="p-4 sm:p-6 lg:p-10 w-full flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
       {successMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/25 p-4">
           <div className="flex min-h-[120px] w-full max-w-sm flex-col items-center justify-center rounded-xl bg-white px-6 py-5 text-center shadow-xl">
@@ -286,7 +286,7 @@ export default function ProfilPage() {
       )}
       
       {/* ---------------- BAGIAN KIRI: KARTU IDENTITAS ---------------- */}
-      <div className="w-full lg:w-[320px] bg-[#f0f7ff] rounded-3xl p-8 flex flex-col items-center text-center shadow-sm border border-blue-50 shrink-0">
+      <div className="w-full lg:w-[320px] bg-[#f0f7ff] rounded-3xl p-6 sm:p-8 flex flex-col items-center text-center shadow-sm border border-blue-50 shrink-0">
         <div className="relative mb-6">
           <div className="relative h-28 w-28 overflow-hidden rounded-full border-[6px] border-white bg-white shadow-sm">
             <Image
@@ -320,7 +320,7 @@ export default function ProfilPage() {
       <div className="flex-1 flex flex-col gap-8 w-full">
         
         {/* Form Informasi Pribadi */}
-        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+        <div className="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-slate-100">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-800">Informasi Pribadi</h3>
             <p className="text-xs text-slate-500 mt-1">Kelola data diri dasar untuk akun SIFOKAM Anda.</p>
@@ -379,7 +379,7 @@ export default function ProfilPage() {
         </div>
 
         {/* Form Ubah Kata Sandi */}
-        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+        <div className="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-slate-100">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-800">Ubah Kata Sandi Akun</h3>
             <p className="text-xs text-slate-500 mt-1">Perbarui kata sandi Anda untuk menjaga keamanan.</p>
