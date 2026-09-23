@@ -220,7 +220,7 @@ export default function DaftarPenggunaPage() {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 lg:p-8 min-h-[500px] flex flex-col">
         {/* Baris Pencarian & Filter */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="relative flex-1 max-w-md">
+          <div className="relative w-full min-w-0 sm:max-w-md sm:flex-1">
             <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
             </div>
@@ -232,7 +232,7 @@ export default function DaftarPenggunaPage() {
               className="h-auto rounded-xl bg-slate-50/50 py-2.5 pl-11 pr-4 text-sm"
             />
           </div>
-          <div className="relative w-full sm:w-48">
+          <div className="relative w-full sm:w-48 sm:shrink-0">
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}

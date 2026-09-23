@@ -366,11 +366,11 @@ export default function ProfilPage() {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end">
+            <div className="flex justify-stretch sm:justify-end">
               <Button
                 type="submit"
                 disabled={isSavingProfile}
-                className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700"
+                className="w-full rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700 sm:w-auto"
               >
                 {isSavingProfile ? "Menyimpan..." : "Simpan Perubahan"}
               </Button>
@@ -456,12 +456,12 @@ export default function ProfilPage() {
 
             </div>
             
-            <div className="flex justify-end">
+            <div className="flex justify-stretch sm:justify-end">
               <Button
                 type="submit"
                 disabled={isSavingPassword}
                 variant="outline"
-                className="rounded-xl px-6 py-2.5 text-sm"
+                className="w-full rounded-xl px-6 py-2.5 text-sm sm:w-auto"
               >
                 {isSavingPassword ? "Memproses..." : "Perbarui Password"}
               </Button>
