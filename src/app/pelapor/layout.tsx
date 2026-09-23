@@ -104,8 +104,16 @@ export default function PelaporLayout({
 
   return (
     <div className="flex h-screen w-full bg-slate-50 font-sans overflow-hidden relative">
+      {isSidebarOpen && (
+        <button
+          type="button"
+          aria-label="Tutup sidebar"
+          onClick={() => setIsSidebarOpen(false)}
+          className="fixed inset-0 z-30 bg-slate-900/30 lg:hidden"
+        />
+      )}
       {/* SIDEBAR KIRI (Dibuat dinamis lebarnya berdasarkan state isSidebarOpen) */}
-      <aside className={`bg-white border-r border-slate-100 flex flex-col shrink-0 h-full transition-all duration-300 ${isSidebarOpen ? "w-[260px]" : "w-0 overflow-hidden"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 flex-col border-r border-slate-100 bg-white transition-all duration-300 lg:relative lg:z-auto ${isSidebarOpen ? "translate-x-0 lg:w-[260px]" : "-translate-x-full lg:translate-x-0 lg:w-0 lg:overflow-hidden"}`}>
         <div className="h-24 flex items-center px-8 border-b border-transparent shrink-0 whitespace-nowrap">
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10 flex-shrink-0">
@@ -131,6 +139,7 @@ export default function PelaporLayout({
                     ? "bg-blue-600 text-white shadow-md" 
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
                 }`}
+                  onClick={() => setIsSidebarOpen(false)}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
                 Dashboard
@@ -148,13 +157,14 @@ export default function PelaporLayout({
                     ? "bg-blue-600 text-white shadow-md" 
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
                 }`}
+                  onClick={() => setIsSidebarOpen(false)}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
                 Profil
               </Link>
 
               <Button
-                onClick={() => setIsLogoutModalOpen(true)}
+                onClick={() => { setIsSidebarOpen(false); setIsLogoutModalOpen(true); }}
                 variant="ghost"
                 className="mt-1 flex w-full items-center justify-start gap-3 rounded-xl bg-[#D65F64] px-4 py-3 text-left text-sm font-semibold text-white shadow-sm hover:bg-red-600 hover:text-white"
               >
@@ -168,7 +178,7 @@ export default function PelaporLayout({
 
       {/* KONTEN UTAMA */}
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-        <header className="h-24 px-8 flex items-center justify-between shrink-0">
+        <header className="flex h-20 shrink-0 items-center justify-between px-4 sm:h-24 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
             {/* TOMBOL TOGGLE DIHUBUNGKAN KE STATE */}
             <Button
@@ -181,11 +191,11 @@ export default function PelaporLayout({
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" /></svg>
             </Button>
-            <h1 className="text-2xl font-bold text-blue-600">{getPageTitle()}</h1>
+            <h1 className="text-lg font-bold text-blue-600 sm:text-2xl">{getPageTitle()}</h1>
           </div>
           
-          <div className="flex items-center gap-3 bg-slate-100/80 px-4 py-2 rounded-full border border-slate-200">
-            <div className="flex flex-col text-right">
+          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/80 px-2 py-1.5 sm:gap-3 sm:px-4 sm:py-2">
+            <div className="hidden flex-col text-right sm:flex">
               <span className="text-xs font-bold text-blue-600">{userName}</span>
               <span className="text-[10px] text-slate-500 font-medium">Pelapor</span>
             </div>
