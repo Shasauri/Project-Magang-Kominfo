@@ -250,7 +250,7 @@ export default function DaftarPenggunaPage() {
 
         {/* Tabel Pengguna */}
         <div className="overflow-x-auto flex-1">
-          <table className="w-full text-sm text-left">
+          <table className="min-w-[640px] w-full text-sm text-left">
             <thead>
               <tr className="bg-slate-50 text-slate-500 font-semibold text-xs border-y border-slate-100">
                 <th className="px-6 py-4 rounded-tl-lg">Nama Pengguna</th>
@@ -314,7 +314,7 @@ export default function DaftarPenggunaPage() {
           <p className="text-xs text-slate-500 font-medium">
             Menampilkan {users.length > 0 ? (currentPage - 1) * perPage + 1 : 0} sampai {Math.min(currentPage * perPage, totalUsers)} dari total {totalUsers} pengguna
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex max-w-full flex-wrap items-center justify-center gap-1 sm:justify-end">
             <Button variant="outline" size="icon-sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} aria-label="Halaman sebelumnya"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg></Button>
             {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
               let pageNum = i + 1;
