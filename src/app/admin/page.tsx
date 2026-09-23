@@ -472,10 +472,10 @@ export default function DashboardPage() {
       {/* ================= MODAL CETAK & UBAH STATUS (AUTO-SAVE) ================= */}
       {isPrintModalOpen && (
         <Dialog open={isPrintModalOpen} onOpenChange={(open) => !open && closePrintModal()}>
-          <DialogContent className="max-h-[90vh] max-w-4xl overflow-hidden rounded-3xl p-0">
+          <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-4xl overflow-hidden rounded-3xl p-0 sm:max-h-[calc(100dvh-4rem)]">
             
             {/* Header Modal */}
-            <div className="p-8 pb-6 border-b border-slate-100 flex items-center justify-between relative">
+            <div className="flex flex-col gap-4 border-b border-slate-100 p-4 pb-5 sm:flex-row sm:items-center sm:justify-between sm:p-8 sm:pb-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
@@ -499,7 +499,7 @@ export default function DashboardPage() {
             )}
 
             {/* Body Modal */}
-            <div className="p-8 overflow-y-auto space-y-6 flex-1">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 space-y-6 sm:p-8">
               {isLoadingPrintData ? (
                 <div className="text-center py-10 text-slate-400 font-medium animate-pulse">Menyiapkan data laporan...</div>
               ) : (
@@ -596,11 +596,11 @@ export default function DashboardPage() {
             </div>
 
             {/* Footer Modal */}
-            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-white">
+            <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-white p-4 sm:flex-row sm:justify-end sm:p-6">
               <button 
                 onClick={closePrintModal} 
                 disabled={isPrinting || isLoadingPrintData}
-                className="py-2.5 px-6 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
+                className="w-full rounded-xl border border-slate-200 px-6 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 sm:w-auto"
               >
                 Tutup
               </button>
@@ -608,7 +608,7 @@ export default function DashboardPage() {
               <button 
                 onClick={handlePrintOnly}
                 disabled={isPrinting || isLoadingPrintData || isStatusUpdating}
-                className="py-2.5 px-6 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 sm:w-auto"
               >
                 {isPrinting ? (
                   <>
@@ -627,7 +627,7 @@ export default function DashboardPage() {
       {/* ================= MODAL CETAK REKAP LAPORAN ================= */}
       {isRecapModalOpen && (
         <Dialog open={isRecapModalOpen} onOpenChange={(open) => !open && setIsRecapModalOpen(false)}>
-          <DialogContent className="max-w-md rounded-3xl p-8">
+          <DialogContent className="max-w-md rounded-3xl p-4 sm:p-8">
             
             {/* Tombol Close */}
             {/* Header Modal */}

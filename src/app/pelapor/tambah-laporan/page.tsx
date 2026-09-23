@@ -530,7 +530,7 @@ function TambahLaporanContent() {
       {/* ================= MODAL SUBMIT LAPORAN ================= */}
       {isSubmitModalOpen && (
         <Dialog open={isSubmitModalOpen} onOpenChange={(open) => !open && setIsSubmitModalOpen(false)}>
-          <DialogContent className="max-w-sm rounded-3xl p-8 text-center">
+          <DialogContent className="max-w-sm rounded-3xl p-4 text-center sm:p-8">
             <DialogHeader>
               <DialogTitle className="mb-3 text-lg font-bold text-slate-900">Apakah kamu yakin ingin submit laporan?</DialogTitle>
               <DialogDescription className="mb-8 px-4 text-[11px] leading-relaxed"> 
@@ -538,7 +538,7 @@ function TambahLaporanContent() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex items-center gap-3 w-full">
+            <div className="flex w-full flex-col-reverse gap-3 sm:flex-row">
               <Button
                 variant="outline"
                 onClick={() => setIsSubmitModalOpen(false)} 

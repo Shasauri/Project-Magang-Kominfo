@@ -331,21 +331,21 @@ export default function DaftarPenggunaPage() {
       {/* ---------------- MODAL EDIT USER ---------------- */}
       {isEditModalOpen && selectedUser && (
         <Dialog open={isEditModalOpen} onOpenChange={(open) => !open && closeModal()}>
-          <DialogContent className="max-h-[90vh] max-w-3xl overflow-hidden rounded-3xl p-0">
+          <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-3xl overflow-hidden rounded-3xl p-0 sm:max-h-[calc(100dvh-4rem)]">
             
             {/* Header Modal */}
-            <div className="p-8 pb-6 relative flex items-center gap-6 border-b border-slate-100">
+            <div className="relative flex flex-col gap-4 border-b border-slate-100 p-4 pb-5 sm:flex-row sm:items-center sm:gap-6 sm:p-8 sm:pb-6">
               <div className="w-20 h-20 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
               </div>
               
-              <div>
+              <div className="min-w-0">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold text-slate-900">{selectedUser.name}</DialogTitle>
+                  <DialogTitle className="break-words text-xl font-bold text-slate-900 sm:text-2xl">{selectedUser.name}</DialogTitle>
                   <DialogDescription className="sr-only">Edit status dan detail pengguna</DialogDescription>
                 </DialogHeader>
-                <div className="flex items-center gap-4 mt-1">
-                  <span className="text-sm font-medium text-slate-500">ID : {selectedUser.employee_id || selectedUser.id_number || selectedUser.id}</span>
+                <div className="mt-1 flex flex-wrap items-center gap-2 sm:gap-4">
+                  <span className="break-all text-sm font-medium text-slate-500">ID : {selectedUser.employee_id || selectedUser.id_number || selectedUser.id}</span>
                   <span className={`flex items-center gap-1.5 text-xs font-bold ${editStatus === "aktif" ? "text-green-600" : "text-red-600"}`}>
                     <span className={`w-2 h-2 rounded-full ${editStatus === "aktif" ? "bg-green-500" : "bg-red-500"}`}></span>
                     {editStatus === "aktif" ? "Aktif" : "Non Aktif"}
@@ -355,7 +355,7 @@ export default function DaftarPenggunaPage() {
             </div>
 
             {/* Body Form Modal */}
-            <div className="p-8 overflow-y-auto space-y-6">
+            <div className="min-h-0 overflow-y-auto overscroll-contain space-y-6 p-4 sm:p-8">
               {/* Email */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Email</label>
@@ -426,11 +426,11 @@ export default function DaftarPenggunaPage() {
               </div>
               
               {/* Tombol Simpan */}
-              <div className="pt-4 flex justify-end">
+              <div className="flex justify-stretch pt-4 sm:justify-end">
                 <Button
                   onClick={handleUpdateStatus}
                   disabled={isSubmitting}
-                  className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700"
+                  className="w-full rounded-xl bg-blue-600 px-6 py-2.5 text-sm text-white hover:bg-blue-700 sm:w-auto"
                 >
                   {isSubmitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </Button>
@@ -444,7 +444,7 @@ export default function DaftarPenggunaPage() {
       {/* ---------------- MODAL HAPUS USER ---------------- */}
       {isDeleteModalOpen && selectedUser && (
         <Dialog open={isDeleteModalOpen} onOpenChange={(open) => !open && closeModal()}>
-          <DialogContent className="max-w-sm rounded-3xl p-8 text-center">
+          <DialogContent className="max-w-sm rounded-3xl p-4 text-center sm:p-8">
             
             <div className="mx-auto w-16 h-16 rounded-full bg-red-50 border border-red-100 flex items-center justify-center text-red-500 mb-5">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8"><path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
@@ -460,7 +460,7 @@ export default function DaftarPenggunaPage() {
               aplikasi terkait akan terhapus secara permanen.
             </p>
             
-            <div className="flex items-center gap-3 w-full">
+            <div className="flex w-full flex-col-reverse gap-3 sm:flex-row">
               <Button
                 variant="outline"
                 onClick={closeModal} 
