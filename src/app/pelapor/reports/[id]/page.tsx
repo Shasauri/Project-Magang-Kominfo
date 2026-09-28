@@ -328,14 +328,23 @@ export default function DetailEditLaporanPage() {
       <main className="flex-1 px-4 sm:px-6 lg:px-10 pb-8 sm:pb-10 pt-4 overflow-y-auto">
         
         {/* Header Title (Pengisian Form) */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => router.push("/pelapor")}
-            className="bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold px-4 py-2 rounded-md transition-colors"
+            className="rounded-md bg-red-600 px-4 py-2 text-[10px] font-bold text-white transition-colors hover:bg-red-700"
           >
             Kembali ke beranda
           </button>
+          {!isEditing && isPending && (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="rounded-xl bg-[#16C542] px-4 py-2.5 text-[10px] font-bold text-white shadow-sm transition-colors hover:bg-green-600 xl:hidden"
+            >
+              Edit Form
+            </button>
+          )}
         </div>
 
         {/* Info Card (Sesuai Gambar Terbaru) */}
@@ -462,6 +471,36 @@ export default function DetailEditLaporanPage() {
               </Card>
             );
           })}
+        </div>
+
+        {/* Tombol aksi versi mobile */}
+        <div className="mt-6 flex max-w-4xl flex-col gap-3 xl:hidden">
+          {isEditing && (
+            <>
+              <div className="flex w-full flex-col gap-3 sm:flex-row">
+                <button
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                  className="w-full rounded-xl bg-red-600 py-3.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-red-700 disabled:opacity-50 sm:flex-1"
+                >
+                  Batalkan Edit
+                </button>
+                <button
+                  onClick={handleSaveChanges}
+                  disabled={isSaving}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-50 sm:flex-1"
+                >
+                  {isSaving && (
+                    <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  )}
+                  Simpan Perubahan
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </main>
 

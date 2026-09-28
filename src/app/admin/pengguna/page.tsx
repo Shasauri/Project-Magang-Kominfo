@@ -331,7 +331,7 @@ export default function DaftarPenggunaPage() {
       {/* ---------------- MODAL EDIT USER ---------------- */}
       {isEditModalOpen && selectedUser && (
         <Dialog open={isEditModalOpen} onOpenChange={(open) => !open && closeModal()}>
-          <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-3xl overflow-hidden rounded-3xl p-0 sm:max-h-[calc(100dvh-4rem)]">
+          <DialogContent className="flex max-h-[calc(100dvh-2rem)] max-w-3xl flex-col overflow-hidden rounded-3xl p-0 sm:max-h-[calc(100dvh-4rem)]">
             
             {/* Header Modal */}
             <div className="relative flex flex-col gap-4 border-b border-slate-100 p-4 pb-5 sm:flex-row sm:items-center sm:gap-6 sm:p-8 sm:pb-6">
@@ -355,7 +355,7 @@ export default function DaftarPenggunaPage() {
             </div>
 
             {/* Body Form Modal */}
-            <div className="min-h-0 overflow-y-auto overscroll-contain space-y-6 p-4 sm:p-8">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain space-y-6 p-4 sm:p-8">
               {/* Email */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Email</label>

@@ -488,6 +488,15 @@ function TambahLaporanContent() {
                 );
               })}
             </div>
+
+            <div className="mt-6 border-t border-slate-200 pt-4 xl:hidden">
+              <Button
+                onClick={() => setIsSubmitModalOpen(true)}
+                className="w-full rounded-xl bg-blue-600 py-3 text-sm text-white hover:bg-blue-700"
+              >
+                Submit Laporan
+              </Button>
+            </div>
           </main>
 
           {/* SIDEBAR KANAN (Tracker Pertanyaan) */}
