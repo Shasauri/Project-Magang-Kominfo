@@ -78,10 +78,18 @@ export default function LoginPage() {
       return;
     }
 
-    const timeoutId = window.setTimeout(() => {
+    if (loginRetryAfter <= 0) {
       setIsLoginBlocked(false);
       setLoginRetryAfter(null);
-    }, loginRetryAfter * 1000);
+      setErrorMsg("");
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setLoginRetryAfter((currentRetryAfter) =>
+        currentRetryAfter === null ? null : currentRetryAfter - 1
+      );
+    }, 1000);
 
     return () => window.clearTimeout(timeoutId);
   }, [loginRetryAfter]);
@@ -129,10 +137,7 @@ export default function LoginPage() {
 
       if (!res.ok) {
         if (res.status === 429) {
-          const retryMessage = data.retry_after !== undefined
-            ? ` Mohon tunggu ${data.retry_after} detik sebelum mencoba kembali.`
-            : "";
-          setErrorMsg(`${data.message || "Login ditolak."}${retryMessage}`);
+          setErrorMsg(data.message || "Login ditolak.");
           setIsLoginBlocked(true);
           setLoginRetryAfter(data.retry_after ?? null);
         } else if (res.status === 401) {
@@ -258,6 +263,9 @@ export default function LoginPage() {
           {errorMsg && (
             <div className="mb-3 rounded-lg bg-red-50 p-2.5 text-xs text-red-600 border border-red-200">
               {errorMsg}
+              {loginRetryAfter !== null && (
+                <span>{` Mohon tunggu ${loginRetryAfter} detik sebelum mencoba kembali.`}</span>
+              )}
             </div>
           )}
 
