@@ -9,6 +9,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+interface LoginErrorResponse {
+  message?: string;
+  remaining_attempts?: number;
+  retry_after?: number;
+}
+
+interface LoginSuccessResponse extends LoginErrorResponse {
+  access_token: string;
+  user?: {
+    role?: string;
+  };
+}
+
 export default function LoginPage() {
   const router = useRouter();
   
@@ -26,6 +39,8 @@ export default function LoginPage() {
   // State untuk loading & error
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isLoginBlocked, setIsLoginBlocked] = useState(false);
+  const [loginRetryAfter, setLoginRetryAfter] = useState<number | null>(null);
 
   const setAuthCookie = (token: string, shouldRemember: boolean) => {
     const maxAge = shouldRemember ? 30 * 24 * 60 * 60 : 60 * 60;
@@ -57,6 +72,19 @@ export default function LoginPage() {
   useEffect(() => {
     loadCaptcha();
   }, []);
+
+  useEffect(() => {
+    if (loginRetryAfter === null) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsLoginBlocked(false);
+      setLoginRetryAfter(null);
+    }, loginRetryAfter * 1000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [loginRetryAfter]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -97,22 +125,38 @@ export default function LoginPage() {
         }),
       });
 
-      const data = await res.json();
+      const data: LoginErrorResponse | LoginSuccessResponse = await res.json();
 
       if (!res.ok) {
-        setErrorMsg(data.message || "Terjadi kesalahan saat login.");
+        if (res.status === 429) {
+          const retryMessage = data.retry_after !== undefined
+            ? ` Mohon tunggu ${data.retry_after} detik sebelum mencoba kembali.`
+            : "";
+          setErrorMsg(`${data.message || "Login ditolak."}${retryMessage}`);
+          setIsLoginBlocked(true);
+          setLoginRetryAfter(data.retry_after ?? null);
+        } else if (res.status === 401) {
+          const remainingAttemptsMessage = data.remaining_attempts !== undefined
+            ? ` Sisa percobaan: ${data.remaining_attempts}.`
+            : "";
+          setErrorMsg(`${data.message || "Email atau password salah."}${remainingAttemptsMessage}`);
+        } else {
+          setErrorMsg(data.message || "Terjadi kesalahan saat login.");
+        }
         loadCaptcha(true);
         setIsLoading(false);
         return;
       }
 
+      const successData = data as LoginSuccessResponse;
+
       // 1. Simpan Token
-      setAuthCookie(data.access_token, rememberMe);
+      setAuthCookie(successData.access_token, rememberMe);
 
       // 2. Cek Role User untuk Redirect
       // Opsi A: Jika respons API login SUDAH menyertakan data user (misal: data.user.role)
-      if (data.user && data.user.role) {
-        if (data.user.role === "admin") {
+      if (successData.user && successData.user.role) {
+        if (successData.user.role === "admin") {
           router.push("/admin");
         } else {
           router.push("/pelapor");
@@ -122,7 +166,7 @@ export default function LoginPage() {
       else {
         const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
           headers: {
-            "Authorization": `Bearer ${data.access_token}`,
+            "Authorization": `Bearer ${successData.access_token}`,
             "Content-Type": "application/json"
           }
         });
@@ -144,12 +188,10 @@ export default function LoginPage() {
     } catch (error) {
       setErrorMsg("Terjadi kesalahan jaringan.");
       loadCaptcha(true);
+      setIsLoading(false);
     } finally {
       // Note: Sengaja tidak set isLoading(false) jika sukses agar tombol tetap "Memproses..." 
       // saat Next.js sedang memuat halaman baru
-      if (errorMsg) {
-         setIsLoading(false);
-      }
     }
   };
 
@@ -324,7 +366,7 @@ export default function LoginPage() {
             <div>
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isLoginBlocked}
                 className="w-full bg-[#2563eb] text-white hover:bg-blue-700 disabled:bg-blue-400"
               >
                 {isLoading ? "Memproses..." : "Masuk"}

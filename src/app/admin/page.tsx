@@ -6,6 +6,9 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +16,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Download, Pencil } from "lucide-react";
 
 const getCookie = (name: string) => {
   if (typeof document === "undefined") return null;
@@ -472,18 +483,18 @@ export default function DashboardPage() {
       {/* ================= MODAL CETAK & UBAH STATUS (AUTO-SAVE) ================= */}
       {isPrintModalOpen && (
         <Dialog open={isPrintModalOpen} onOpenChange={(open) => !open && closePrintModal()}>
-          <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-4xl overflow-hidden rounded-3xl p-0 sm:max-h-[calc(100dvh-4rem)]">
+          <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-4xl overflow-hidden rounded-2xl bg-white p-0 shadow-xl sm:max-h-[calc(100dvh-4rem)]">
             
             {/* Header Modal */}
             <div className="flex flex-col gap-4 border-b border-slate-100 p-4 pb-5 sm:flex-row sm:items-center sm:justify-between sm:p-8 sm:pb-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  <Pencil className="size-5" />
                 </div>
                 <div>
                   <DialogHeader>
-                    <DialogTitle className="text-xl font-bold text-slate-900">Cetak Hasil Laporan</DialogTitle>
-                    <DialogDescription className="mt-0.5 text-xs">Lakukan Cetak Hasil Laporan</DialogDescription>
+                    <DialogTitle className="text-base font-semibold text-slate-900">Cetak Hasil Laporan</DialogTitle>
+                    <DialogDescription className="text-xs text-slate-400">Lakukan Cetak Hasil Laporan</DialogDescription>
                   </DialogHeader>
                 </div>
               </div>
@@ -499,42 +510,43 @@ export default function DashboardPage() {
             )}
 
             {/* Body Modal */}
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 space-y-6 sm:p-8">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:space-y-6 sm:p-8">
               {isLoadingPrintData ? (
                 <div className="text-center py-10 text-slate-400 font-medium animate-pulse">Menyiapkan data laporan...</div>
               ) : (
                 <>
                   {/* Row 1: Nama Media */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-2">Nama Media <span className="text-red-500">*</span></label>
-                    <input type="text" disabled value={modalMediaName} className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 font-medium text-sm outline-none" />
+                  <div className="flex flex-col gap-2">
+                    <Label className="text-xs font-medium text-slate-700">Nama Media <span className="text-red-500">*</span></Label>
+                    <Input type="text" disabled value={modalMediaName} className="h-8 rounded-md border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-700" />
                   </div>
 
                   {/* Row 2: Grid File Bukti & Link */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     
                     {/* MODIFIKASI: BAGIAN FILE BUKTI SEKARANG MENGGUNAKAN FUNGSI UNDUH PDF */}
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-2">File Bukti <span className="text-red-500">*</span></label>
-                      <div className="grid grid-cols-2 gap-3 mt-1">
+                    <div className="flex flex-col gap-2">
+                      <Label className="text-xs font-medium text-slate-700">File Bukti <span className="text-red-500">*</span></Label>
+                      <div className="grid grid-cols-2 gap-3">
                         {modalFiles.length > 0 ? modalFiles.map((file, i) => {
                           const qId = file.question_id || file.question?.id;
                           const isDownloading = downloadingFileId === qId;
                           
                           return (
-                            <button 
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="default"
                               key={file.id}
                               onClick={() => handleDownloadPdf(qId)}
                               disabled={isDownloading}
-                              className="flex items-center justify-between p-3 border border-slate-200 rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-colors group text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="h-10 justify-between rounded-md border-slate-200 bg-slate-50 px-3 text-left text-xs font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50"
                             >
-                              <span className="text-xs font-semibold text-slate-700 truncate mr-2">
+                              <span className="truncate pr-2">
                                 {isDownloading ? "Mengunduh..." : `File Bukti ${i + 1}`}
                               </span>
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`w-4 h-4 text-slate-400 group-hover:text-blue-600 shrink-0 ${isDownloading ? 'animate-bounce' : ''}`}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                              </svg>
-                            </button>
+                              <Download className={isDownloading ? "animate-bounce text-blue-600" : "text-slate-400"} />
+                            </Button>
                           );
                         }) : (
                           <div className="col-span-2 text-xs text-slate-400 py-3 italic">Tidak ada file terlampir.</div>
@@ -542,12 +554,12 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-2">Link <span className="text-red-500">*</span></label>
-                      <div className="grid grid-cols-2 gap-3 mt-1">
+                    <div className="flex flex-col gap-2">
+                      <Label className="text-xs font-medium text-slate-700">Link <span className="text-red-500">*</span></Label>
+                      <div className="grid grid-cols-2 gap-3">
                         {modalLinks.length > 0 ? modalLinks.map((link) => (
-                          <div key={link.id} className="p-3 border border-slate-200 rounded-xl bg-slate-50">
-                            <a href={link.answer_value} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-slate-700 hover:text-blue-600 hover:underline truncate block w-full">
+                          <div key={link.id} className="h-10 min-w-0 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
+                            <a href={link.answer_value} target="_blank" rel="noopener noreferrer" className="block w-full truncate text-xs font-medium text-slate-700 hover:text-blue-600 hover:underline">
                               {link.answer_value}
                             </a>
                           </div>
@@ -559,36 +571,34 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Row 3: Total Skor, Kategori, Status */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                  <div className="grid grid-cols-1 gap-6 border-t border-slate-100 pt-5 md:grid-cols-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-2">TOTAL SKOR <span className="text-red-500">*</span></label>
-                      <input type="text" disabled value={printReportData?.total_score ? parseFloat(printReportData.total_score).toFixed(2) : "0.00"} className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 font-bold text-sm outline-none" />
+                      <Label className="mb-2 text-[10px] font-medium uppercase text-slate-700">TOTAL SKOR <span className="text-red-500">*</span></Label>
+                      <Input type="text" disabled value={printReportData?.total_score ? parseFloat(printReportData.total_score).toFixed(2) : "0.00"} className="h-10 rounded-lg border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-2">KATEGORI <span className="text-red-500">*</span></label>
-                      <input type="text" disabled value={printReportData?.category || "-"} className="block w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 font-bold text-sm outline-none" />
+                      <Label className="mb-2 text-[10px] font-medium uppercase text-slate-700">KATEGORI <span className="text-red-500">*</span></Label>
+                      <Input type="text" disabled value={printReportData?.category || "-"} className="h-10 rounded-lg border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700" />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-2">STATUS LAPORAN <span className="text-red-500">*</span></label>
-                      <div className="relative">
-                        <select
-                          value={printEditStatus}
-                          onChange={(e) => handleAutoUpdateStatus(e.target.value)}
-                          disabled={isStatusUpdating}
-                          className="block w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-800 font-semibold text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer disabled:opacity-50"
-                        >
-                          <option value="disetujui">Di Verifikasi</option>
-                          <option value="pending">Pending</option>
-                          <option value="proses">Diproses</option>
-                        </select>
-                        <div className={`absolute top-1/2 -translate-y-1/2 left-4 w-2 h-2 rounded-full ${
-                          printEditStatus === 'disetujui' ? 'bg-green-500' : printEditStatus === 'pending' ? 'bg-blue-500' : 'bg-orange-500'
-                        }`}></div>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-                        </div>
-                        <style>{`select { padding-left: 2rem !important; }`}</style>
-                      </div>
+                      <Label className="mb-2 text-[10px] font-medium uppercase text-slate-700">STATUS LAPORAN <span className="text-red-500">*</span></Label>
+                      <Select
+                        value={printEditStatus}
+                        onValueChange={(value) => value && handleAutoUpdateStatus(value)}
+                        disabled={isStatusUpdating}
+                      >
+                        <SelectTrigger className="relative h-10 w-full rounded-lg border-slate-200 bg-white pl-8 text-xs font-semibold text-slate-800">
+                          <span className={`absolute left-3 size-1.5 rounded-full ${
+                            printEditStatus === "disetujui" ? "bg-green-500" : printEditStatus === "pending" ? "bg-blue-500" : "bg-orange-500"
+                          }`} />
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="disetujui">Di Verifikasi</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="proses">Diproses</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </>
@@ -597,18 +607,21 @@ export default function DashboardPage() {
 
             {/* Footer Modal */}
             <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-white p-4 sm:flex-row sm:justify-end sm:p-6">
-              <button 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={closePrintModal} 
                 disabled={isPrinting || isLoadingPrintData}
-                className="w-full rounded-xl border border-slate-200 px-6 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 sm:w-auto"
+                className="h-10 w-full rounded-md border-slate-200 px-6 text-xs font-semibold text-slate-700 sm:w-auto"
               >
-                Tutup
-              </button>
+                Batal
+              </Button>
               
-              <button 
+              <Button
+                type="button"
                 onClick={handlePrintOnly}
                 disabled={isPrinting || isLoadingPrintData || isStatusUpdating}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 sm:w-auto"
+                className="h-10 w-full rounded-md bg-blue-600 px-6 text-xs font-semibold text-white hover:bg-blue-700 sm:w-auto"
               >
                 {isPrinting ? (
                   <>
@@ -618,7 +631,7 @@ export default function DashboardPage() {
                 ) : (
                   "Cetak Laporan"
                 )}
-              </button>
+              </Button>
             </div>
             
           </DialogContent>
