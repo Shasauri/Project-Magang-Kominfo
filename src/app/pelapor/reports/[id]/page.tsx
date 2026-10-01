@@ -304,19 +304,19 @@ export default function DetailEditLaporanPage() {
       {isSaveSuccessOpen && (
         <Dialog open={isSaveSuccessOpen} onOpenChange={(open) => !open && setIsSaveSuccessOpen(false)}>
           <DialogContent className="max-w-sm rounded-2xl px-8 py-6 text-center">
-            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+            <div className="mx-auto mt-3 mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-500">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m5 12 4 4L19 6" />
               </svg>
             </div>
-            <DialogHeader>
+            <DialogHeader className="w-full items-center">
               <DialogTitle className="text-sm font-bold text-slate-900">Perubahan Berhasil Disimpan</DialogTitle>
               <DialogDescription className="sr-only">Perubahan laporan berhasil disimpan</DialogDescription>
             </DialogHeader>
             <Button
               type="button"
               onClick={handleSaveSuccessConfirm}
-              className="mt-5 w-28 self-center rounded-lg bg-blue-600 px-4 py-2 text-xs text-white hover:bg-blue-700"
+              className="mx-auto mt-5 w-28 rounded-lg bg-blue-600 px-4 py-2 text-xs text-white hover:bg-blue-700"
             >
               OK
             </Button>
