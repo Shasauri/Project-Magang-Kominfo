@@ -9,7 +9,6 @@ const setAuthCookie = (token: string, shouldRemember: boolean) => {
   const expires = new Date(Date.now() + maxAge * 1000).toUTCString();
 
   document.cookie = `token=${token}; expires=${expires}; path=/; max-age=${maxAge}; SameSite=Lax${secureFlag}`;
-  localStorage.setItem("token", token);
 };
 
 function GoogleCallbackContent() {

@@ -21,14 +21,7 @@ const getStoredToken = () => {
   const cookieToken = getCookie("token");
   if (cookieToken) return cookieToken;
 
-  const localToken = localStorage.getItem("token");
-  if (localToken) {
-    const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
-    const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `token=${localToken}; expires=${expires}; path=/; max-age=${30 * 24 * 60 * 60}; SameSite=Lax${secureFlag}`;
-  }
-
-  return localToken;
+  return getCookie("token");
 };
 
 export default function PelaporLayout({
@@ -57,7 +50,6 @@ export default function PelaporLayout({
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (!res.ok) {
-          localStorage.removeItem("token");
           document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
           router.replace("/login");
           return;
@@ -91,7 +83,6 @@ export default function PelaporLayout({
       }
     }
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    localStorage.removeItem("token");
     router.replace("/login");
   };
 

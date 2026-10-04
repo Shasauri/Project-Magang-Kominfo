@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Download, Pencil } from "lucide-react";
+import { isSafeExternalUrl } from "@/app/lib/security";
 
 const getCookie = (name: string) => {
   if (typeof document === "undefined") return null;
@@ -35,7 +36,7 @@ const getCookie = (name: string) => {
 
 const getStoredToken = () => {
   if (typeof window === "undefined") return null;
-  return getCookie("token") || localStorage.getItem("token");
+  return getCookie("token");
 };
 
 export default function DashboardPage() {
@@ -225,7 +226,7 @@ export default function DashboardPage() {
     const token = getCookie("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/reports/${selectedReportId}/attachments/${questionId}/download`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${selectedReportId}/attachments/${questionId}/download`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -559,9 +560,15 @@ export default function DashboardPage() {
                       <div className="grid grid-cols-2 gap-3">
                         {modalLinks.length > 0 ? modalLinks.map((link) => (
                           <div key={link.id} className="h-10 min-w-0 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
-                            <a href={link.answer_value} target="_blank" rel="noopener noreferrer" className="block w-full truncate text-xs font-medium text-slate-700 hover:text-blue-600 hover:underline">
-                              {link.answer_value}
-                            </a>
+                            {isSafeExternalUrl(link.answer_value) ? (
+                              <a href={link.answer_value} target="_blank" rel="noopener noreferrer" className="block w-full truncate text-xs font-medium text-slate-700 hover:text-blue-600 hover:underline">
+                                {link.answer_value}
+                              </a>
+                            ) : (
+                              <span className="block w-full truncate text-xs font-medium text-slate-500">
+                                Tautan tidak valid
+                              </span>
+                            )}
                           </div>
                         )) : (
                           <div className="col-span-2 text-xs text-slate-400 py-3 italic">Tidak ada link terlampir.</div>

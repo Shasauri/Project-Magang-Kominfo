@@ -56,6 +56,7 @@ export default function DetailEditLaporanPage() {
   const [uploadingFiles, setUploadingFiles] = useState<{ [key: number]: boolean }>({});
   const [clearedAnswerIds, setClearedAnswerIds] = useState<Set<number>>(new Set());
   const [fileErrors, setFileErrors] = useState<{ [key: number]: string }>({});
+  const [loadingFileId, setLoadingFileId] = useState<number | null>(null);
 
   // 1. Load Data Laporan & Pertanyaan
   const fetchData = async () => {
@@ -188,6 +189,32 @@ export default function DetailEditLaporanPage() {
       setFileErrors(prev => ({ ...prev, [qId]: "Terjadi kesalahan jaringan saat mengunggah file." }));
     } finally {
       setUploadingFiles(prev => ({ ...prev, [qId]: false }));
+    }
+  };
+
+  const handlePreviewFile = async (qId: number) => {
+    setLoadingFileId(qId);
+    const token = getCookie("token");
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${id}/attachments/${qId}/view`, {
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: "Gagal memuat dokumen." }));
+        alert(error.message || "Gagal memuat dokumen.");
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(await res.blob());
+      window.open(objectUrl, "_blank", "noopener,noreferrer");
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch (error) {
+      console.error("Gagal memuat dokumen:", error);
+      alert("Terjadi kesalahan jaringan saat memuat dokumen.");
+    } finally {
+      setLoadingFileId(null);
     }
   };
 
@@ -428,15 +455,15 @@ export default function DetailEditLaporanPage() {
                         
                         {/* Status File Tersimpan */}
                         {ansState?.fileName && !isUploading && (
-                          <a 
-                            href={`${process.env.NEXT_PUBLIC_API_URL}/storage/${ansState.value}`} 
-                            target="_blank" 
-                            rel="noreferrer"
+                          <button
+                            type="button"
+                            onClick={() => handlePreviewFile(q.id)}
+                            disabled={loadingFileId === q.id}
                             className="text-xs text-blue-600 font-semibold truncate flex items-center gap-1 hover:underline decoration-blue-600"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" /></svg>
-                            {ansState.fileName}
-                          </a>
+                            {loadingFileId === q.id ? "Membuka..." : ansState.fileName}
+                          </button>
                         )}
 
                         {!isEditing && !ansState?.fileName && (

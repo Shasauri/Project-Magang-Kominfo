@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { isSafeExternalUrl } from "@/app/lib/security";
 
 const getCookie = (name: string) => {
   if (typeof document === "undefined") return null;
@@ -75,7 +76,7 @@ export default function DetailLaporanAdminPage() {
     const token = getCookie("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/reports/${id}/attachments/${questionId}/view`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${id}/attachments/${questionId}/view`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -224,12 +225,16 @@ export default function DetailLaporanAdminPage() {
                         </span>
                       )}
                     </div>
-                  ) : isUrl ? (
+                  ) : isUrl && isSafeExternalUrl(ansItem.answer_value) ? (
                     <div className="bg-slate-50/70 px-4 py-4">
-                       <a href={ansItem.answer_value} target="_blank" rel="noreferrer" className="text-sm font-medium text-blue-600 hover:underline break-all">
+                       <a href={ansItem.answer_value} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-blue-600 hover:underline break-all">
                          {ansItem.answer_value || "-"}
                        </a>
                      </div>
+                  ) : isUrl ? (
+                    <div className="bg-slate-50/70 px-4 py-4 text-sm font-medium text-slate-500">
+                      Tautan tidak valid
+                    </div>
                   ) : (
                     <div className="bg-slate-50/70 px-4 py-4 text-sm font-medium text-slate-700 break-words min-h-[46px] flex items-center">
                       {ansItem.answer_value || "-"}
