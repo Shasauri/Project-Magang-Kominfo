@@ -39,6 +39,39 @@ const getStoredToken = () => {
   return getCookie("token");
 };
 
+const fetchAllReports = async (baseUrl: string, headers: HeadersInit) => {
+  const allReports: Record<string, unknown>[] = [];
+  let page = 1;
+
+  while (true) {
+    const response = await fetch(`${baseUrl}/admin/reports?page=${page}`, { headers });
+    const responseData = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const error = new Error(
+        responseData?.message || `Gagal memuat laporan (HTTP ${response.status}).`
+      ) as Error & { status?: number; responseData?: unknown };
+      error.status = response.status;
+      error.responseData = responseData;
+      throw error;
+    }
+
+    const pageReports = Array.isArray(responseData)
+      ? responseData
+      : responseData?.data || [];
+    allReports.push(...pageReports);
+
+    if (
+      pageReports.length === 0 ||
+      (responseData?.last_page && page >= responseData.last_page)
+    ) {
+      return allReports;
+    }
+
+    page += 1;
+  }
+};
+
 export default function DashboardPage() {
   const [userName, setUserName] = useState("Admin");
   const [dashboardData, setDashboardData] = useState({ 
@@ -87,10 +120,9 @@ export default function DashboardPage() {
       };
 
       try {
-        const [userRes, dashRes, reportsRes, mediaRes] = await Promise.all([
+        const [userRes, dashRes, mediaRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, { headers }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard`, { headers }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/reports`, { headers }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/media-types`, { headers }),
         ]);
 
@@ -101,14 +133,25 @@ export default function DashboardPage() {
         if (dashRes.ok) {
           setDashboardData(await dashRes.json());
         }
-        if (reportsRes.ok) {
-          const reportsData = await reportsRes.json();
-          setReports(Array.isArray(reportsData) ? reportsData : reportsData.data || []);
+
+        try {
+          const reportsData = await fetchAllReports(
+            process.env.NEXT_PUBLIC_API_URL || "",
+            headers
+          );
+          setReports(reportsData);
           setReportsError("");
-        } else {
-          const errorData = await reportsRes.json().catch(() => null);
-          setReportsError(errorData?.message || `Gagal memuat laporan (HTTP ${reportsRes.status}).`);
-          console.error("Gagal mengambil laporan admin:", reportsRes.status, errorData);
+        } catch (error) {
+          const reportError = error as Error & {
+            status?: number;
+            responseData?: unknown;
+          };
+          setReportsError(reportError.message);
+          console.error(
+            "Gagal mengambil laporan admin:",
+            reportError.status,
+            reportError.responseData
+          );
         }
         if (mediaRes.ok) {
           const mediaData = await mediaRes.json();
