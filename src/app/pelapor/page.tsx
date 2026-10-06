@@ -7,13 +7,7 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
 // Helper untuk mengambil token
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return null;
-};
+const getCookie = (name: string) => name === "token" ? "session" : null;
 
 // Helper format tanggal (DD/MM/YYYY)
 const formatDate = (dateString: string) => {
@@ -75,11 +69,11 @@ export default function PelaporDashboardPage() {
 
       try {
         const [userRes, reportsRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, { headers }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports`, { headers })
+          fetch(`/api/backend/auth/me`, { headers }),
+          fetch(`/api/backend/reports`, { headers })
         ]);
 
-        const mediaRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media-types`);
+        const mediaRes = await fetch(`/api/backend/media-types`);
 
         if (userRes.ok) {
           const userData = await userRes.json();

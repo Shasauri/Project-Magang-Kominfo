@@ -26,18 +26,9 @@ import {
 import { Download, Pencil } from "lucide-react";
 import { isSafeExternalUrl } from "@/app/lib/security";
 
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return null;
-};
+const getCookie = (name: string) => name === "token" ? "session" : null;
 
-const getStoredToken = () => {
-  if (typeof window === "undefined") return null;
-  return getCookie("token");
-};
+const getStoredToken = () => "session";
 
 const fetchAllReports = async (baseUrl: string, headers: HeadersInit) => {
   const allReports: Record<string, unknown>[] = [];
@@ -121,9 +112,9 @@ export default function DashboardPage() {
 
       try {
         const [userRes, dashRes, mediaRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, { headers }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard`, { headers }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/media-types`, { headers }),
+          fetch(`/api/backend/auth/me`, { headers }),
+          fetch(`/api/backend/admin/dashboard`, { headers }),
+          fetch(`/api/backend/media-types`, { headers }),
         ]);
 
         if (userRes.ok) {
@@ -136,7 +127,7 @@ export default function DashboardPage() {
 
         try {
           const reportsData = await fetchAllReports(
-            process.env.NEXT_PUBLIC_API_URL || "",
+            "/api/backend",
             headers
           );
           setReports(reportsData);
@@ -176,7 +167,7 @@ export default function DashboardPage() {
 
     const token = getCookie("token");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/reports/${reportId}`, {
+      const res = await fetch(`/api/backend/admin/reports/${reportId}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
@@ -205,7 +196,7 @@ export default function DashboardPage() {
     
     const token = getCookie("token");
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/reports/${selectedReportId}/status`, {
+      const res = await fetch(`/api/backend/admin/reports/${selectedReportId}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -231,7 +222,7 @@ export default function DashboardPage() {
     if (!selectedReportId || !printReportData) return;
     setIsPrinting(true);
     const token = getCookie("token");
-    const baseURL = process.env.NEXT_PUBLIC_API_URL;
+    const baseURL = "/api/backend";
 
     try {
       const pdfRes = await fetch(`${baseURL}/admin/reports/${selectedReportId}/pdf`, {
@@ -269,7 +260,7 @@ export default function DashboardPage() {
     const token = getCookie("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${selectedReportId}/attachments/${questionId}/download`, {
+      const res = await fetch(`/api/backend/reports/${selectedReportId}/attachments/${questionId}/download`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -299,7 +290,7 @@ export default function DashboardPage() {
   const handleExportExcel = async () => {
     setIsExportingExcel(true);
     const token = getCookie("token");
-    const baseURL = process.env.NEXT_PUBLIC_API_URL;
+    const baseURL = "/api/backend";
 
     let url = `${baseURL}/admin/export-excel`;
     if (selectedMediaTypeId) {

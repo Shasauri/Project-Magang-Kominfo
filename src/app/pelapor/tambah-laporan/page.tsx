@@ -9,13 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return null;
-};
+const getCookie = (name: string) => name === "token" ? "session" : null;
 
 // Helper menentukan answer_type dari teks pertanyaan
 const determineAnswerType = (questionText: string) => {
@@ -88,7 +82,7 @@ function TambahLaporanContent() {
   useEffect(() => {
     const fetchMediaTypes = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/media-types`);
+        const res = await fetch(`/api/backend/media-types`);
         if (res.ok) {
           const data = await res.json();
           setMediaTypes(data);
@@ -111,7 +105,7 @@ function TambahLaporanContent() {
 
     setIsLoading(true);
     const token = getCookie("token");
-    const baseURL = process.env.NEXT_PUBLIC_API_URL;
+    const baseURL = "/api/backend";
 
     try {
       // A. Ambil daftar pertanyaan
@@ -245,7 +239,7 @@ function TambahLaporanContent() {
 
     setIsSubmitting(true);
     const token = getCookie("token");
-    const baseURL = process.env.NEXT_PUBLIC_API_URL;
+    const baseURL = "/api/backend";
     
     const formattedAnswers = Object.entries(answers)
       .filter(([, data]) => data.type !== "file" && data.value.trim())

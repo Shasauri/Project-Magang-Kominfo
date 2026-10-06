@@ -3,14 +3,6 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-const setAuthCookie = (token: string, shouldRemember: boolean) => {
-  const maxAge = shouldRemember ? 30 * 24 * 60 * 60 : 60 * 60;
-  const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
-  const expires = new Date(Date.now() + maxAge * 1000).toUTCString();
-
-  document.cookie = `token=${token}; expires=${expires}; path=/; max-age=${maxAge}; SameSite=Lax${secureFlag}`;
-};
-
 function GoogleCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,25 +25,23 @@ function GoogleCallbackContent() {
 
       try {
         const query = new URLSearchParams({ code, ...(state ? { state } : {}) }).toString();
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google/callback?${query}`, {
+        const res = await fetch(`/api/backend/auth/google/callback?${query}`, {
           method: "GET",
           headers: { Accept: "application/json" },
         });
 
         const data = await res.json().catch(() => ({}));
 
-        if (!res.ok || !data.access_token) {
+        if (!res.ok) {
           throw new Error(data.message || "Gagal menyelesaikan login Google.");
         }
-
-        setAuthCookie(data.access_token, true);
 
         if (data.user && data.user.role) {
           router.replace(data.user.role === "admin" ? "/admin" : "/pelapor");
           return;
         }
 
-        const meRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+        const meRes = await fetch(`/api/backend/auth/me`, {
           headers: {
             Authorization: `Bearer ${data.access_token}`,
             "Content-Type": "application/json",

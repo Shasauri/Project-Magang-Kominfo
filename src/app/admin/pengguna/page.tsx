@@ -13,13 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 // Helper untuk mengambil token dari cookies
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return null;
-};
+const getCookie = (name: string) => name === "token" ? "session" : null;
 
 // Helper inisial nama & warna avatar
 const getInitials = (name: string) => {
@@ -84,7 +78,7 @@ export default function DaftarPenggunaPage() {
       if (!token) return;
 
       try {
-        let url = `${process.env.NEXT_PUBLIC_API_URL}/admin/users?page=${currentPage}`;
+        let url = `/api/backend/admin/users?page=${currentPage}`;
         if (debouncedSearch) url += `&search=${encodeURIComponent(debouncedSearch)}`;
         if (statusFilter) url += `&status=${statusFilter}`;
 
@@ -116,7 +110,7 @@ export default function DaftarPenggunaPage() {
         setIsLoadingSummary(true);
         try {
           const token = getCookie("token");
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${selectedUser.id}`, {
+          const res = await fetch(`/api/backend/admin/users/${selectedUser.id}`, {
             headers: { "Authorization": `Bearer ${token}` }
           });
           
@@ -168,7 +162,7 @@ export default function DaftarPenggunaPage() {
     const token = getCookie("token");
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${selectedUser.id}/status`, {
+      const res = await fetch(`/api/backend/admin/users/${selectedUser.id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({ status: editStatus }),
@@ -195,7 +189,7 @@ export default function DaftarPenggunaPage() {
     const token = getCookie("token");
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${selectedUser.id}`, {
+      const res = await fetch(`/api/backend/admin/users/${selectedUser.id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
       });

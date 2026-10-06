@@ -8,13 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { isSafeExternalUrl } from "@/app/lib/security";
 
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return null;
-};
+const getCookie = (name: string) => name === "token" ? "session" : null;
 
 // Fungsi helper untuk memformat tanggal
 const formatDate = (dateString: string) => {
@@ -47,7 +41,7 @@ export default function DetailLaporanAdminPage() {
       const token = getCookie("token");
       
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/reports/${id}`, {
+        const res = await fetch(`/api/backend/admin/reports/${id}`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         
@@ -76,7 +70,7 @@ export default function DetailLaporanAdminPage() {
     const token = getCookie("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${id}/attachments/${questionId}/view`, {
+      const res = await fetch(`/api/backend/reports/${id}/attachments/${questionId}/view`, {
         method: "GET",
         headers: { "Authorization": `Bearer ${token}` }
       });

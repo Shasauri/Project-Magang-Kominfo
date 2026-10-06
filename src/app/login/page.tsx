@@ -16,7 +16,7 @@ interface LoginErrorResponse {
 }
 
 interface LoginSuccessResponse extends LoginErrorResponse {
-  access_token: string;
+  access_token?: string;
   user?: {
     role?: string;
   };
@@ -42,19 +42,11 @@ export default function LoginPage() {
   const [isLoginBlocked, setIsLoginBlocked] = useState(false);
   const [loginRetryAfter, setLoginRetryAfter] = useState<number | null>(null);
 
-  const setAuthCookie = (token: string, shouldRemember: boolean) => {
-    const maxAge = shouldRemember ? 30 * 24 * 60 * 60 : 60 * 60;
-    const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
-    const expires = new Date(Date.now() + maxAge * 1000).toUTCString();
-
-    document.cookie = `token=${token}; expires=${expires}; path=/; max-age=${maxAge}; SameSite=Lax${secureFlag}`;
-  };
-
   // Fungsi untuk memuat CAPTCHA dari backend
   const loadCaptcha = async (isReload = false) => {
     try {
       const endpoint = isReload ? "/captcha/reload" : "/captcha";
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
+      const res = await fetch(`/api/backend${endpoint}`);
       
       if (res.ok) {
         const data = await res.json();
@@ -98,7 +90,7 @@ export default function LoginPage() {
       setIsLoading(true);
       setErrorMsg("");
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
+      const res = await fetch(`/api/backend/auth/google`);
       const data = await res.json();
 
       if (!res.ok || !data.url) {
@@ -120,7 +112,7 @@ export default function LoginPage() {
     setErrorMsg("");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+      const res = await fetch(`/api/backend/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -155,8 +147,6 @@ export default function LoginPage() {
       const successData = data as LoginSuccessResponse;
 
       // 1. Simpan Token
-      setAuthCookie(successData.access_token, rememberMe);
-
       // 2. Cek Role User untuk Redirect
       // Opsi A: Jika respons API login SUDAH menyertakan data user (misal: data.user.role)
       if (successData.user && successData.user.role) {
@@ -168,7 +158,7 @@ export default function LoginPage() {
       } 
       // Opsi B: Jika API login hanya mengembalikan token, kita hit API /auth/me
       else {
-        const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+        const userRes = await fetch(`/api/backend/auth/me`, {
           headers: {
             "Authorization": `Bearer ${successData.access_token}`,
             "Content-Type": "application/json"

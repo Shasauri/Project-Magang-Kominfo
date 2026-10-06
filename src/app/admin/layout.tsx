@@ -7,23 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-// Helper untuk membaca token
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return null;
-};
-
-const getStoredToken = () => {
-  if (typeof window === "undefined") return null;
-
-  const cookieToken = getCookie("token");
-  if (cookieToken) return cookieToken;
-
-  return getCookie("token");
-};
+const getStoredToken = () => "session";
 
 export default function AdminLayout({
   children,
@@ -47,11 +31,11 @@ export default function AdminLayout({
         return;
       }
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+        const res = await fetch(`/api/backend/auth/me`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (!res.ok) {
-          document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
           router.replace("/login");
           return;
         }
@@ -75,7 +59,7 @@ export default function AdminLayout({
     const token = getStoredToken();
     if (token) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        await fetch(`/api/backend/auth/logout`, {
           method: "POST",
           headers: { "Authorization": `Bearer ${token}` },
         });
@@ -83,7 +67,7 @@ export default function AdminLayout({
         console.error("Gagal mengakhiri sesi di server:", error);
       }
     }
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
     router.replace("/login");
   };
 

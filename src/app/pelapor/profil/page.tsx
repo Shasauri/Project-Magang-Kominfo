@@ -7,13 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 // Helper Token
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return null;
-};
+const getCookie = (name: string) => name === "token" ? "session" : null;
 
 const readApiResponse = async (res: Response) => {
   const text = await res.text();
@@ -28,7 +22,7 @@ const readApiResponse = async (res: Response) => {
 const getAvatarUrl = (avatarUrl: string | null | undefined, version = 0) => {
   if (!avatarUrl) return "/images/user.png";
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const apiUrl = "/api/backend";
   const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
 
   let cleanPath = avatarUrl;
@@ -81,7 +75,7 @@ export default function ProfilPelaporPage() {
     const fetchUser = async () => {
       const token = getCookie("token");
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+        const res = await fetch(`/api/backend/auth/me`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (res.ok) {
@@ -117,7 +111,7 @@ export default function ProfilPelaporPage() {
     formData.append("avatar", file);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/avatar`, {
+      const res = await fetch(`/api/backend/auth/me/avatar`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData
@@ -147,7 +141,7 @@ export default function ProfilPelaporPage() {
     const token = getCookie("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/avatar`, {
+      const res = await fetch(`/api/backend/auth/me/avatar`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -178,7 +172,7 @@ export default function ProfilPelaporPage() {
 
     try {
       // Menggunakan PUT /api/auth/me sesuai dokumentasi API terbaru
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
+      const res = await fetch(`/api/backend/auth/me`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -218,7 +212,7 @@ export default function ProfilPelaporPage() {
 
     try {
       // Menggunakan endpoint spesifik untuk Change Password sesuai dokumen terbaru
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/password`, {
+      const res = await fetch(`/api/backend/auth/me/password`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,

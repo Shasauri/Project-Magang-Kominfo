@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
   const loadCaptcha = async (reload = false) => {
     try {
       const endpoint = reload ? "/captcha/reload" : "/captcha";
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
+      const response = await fetch(`/api/backend${endpoint}`);
       if (!response.ok) throw new Error("Captcha request failed");
       const data = await response.json();
       setCaptchaImg(data.captcha_img);
@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
     setMessage("");
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`, {
+      const response = await fetch(`/api/backend/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, captcha, captcha_key: captchaKey }),

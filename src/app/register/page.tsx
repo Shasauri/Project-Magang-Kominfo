@@ -32,7 +32,7 @@ export default function RegisterPage() {
   // Ambil Captcha saat halaman dimuat
   const fetchCaptcha = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/captcha`);
+      const res = await fetch(`/api/backend/captcha`);
       if (res.ok) {
         const data = await res.json();
         setCaptchaImg(data.captcha_img);
@@ -47,13 +47,6 @@ export default function RegisterPage() {
     fetchCaptcha();
   }, []);
 
-  // Set Cookie Helper
-  const setCookie = (name: string, value: string, days: number) => {
-    const date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-    document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
-  };
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
@@ -66,7 +59,7 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+      const res = await fetch(`/api/backend/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -83,13 +76,7 @@ export default function RegisterPage() {
 
       if (res.ok) {
         setMessage("Registrasi berhasil! Anda akan diarahkan ke halaman berikutnya.");
-        if (data.access_token) {
-          setCookie("token", data.access_token, 1); 
-          setTimeout(() => router.push("/pelapor"), 1500);
-        } else {
-          setMessage("Registrasi berhasil! Silakan masuk dengan akun baru Anda.");
-          setTimeout(() => router.push("/login"), 1500);
-        }
+        setTimeout(() => router.push("/pelapor"), 1500);
       } else {
         setErrorMsg(data.message || "Gagal melakukan registrasi.");
         fetchCaptcha(); // Refresh captcha jika gagal
@@ -105,7 +92,7 @@ export default function RegisterPage() {
 
   const handleGoogleLogin = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`);
+      const res = await fetch(`/api/backend/auth/google`);
       if (res.ok) {
         const data = await res.json();
         if (data.url) {

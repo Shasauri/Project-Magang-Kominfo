@@ -9,13 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Helper Token
-const getCookie = (name: string) => {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(";").shift();
-  return null;
-};
+const getCookie = (name: string) => name === "token" ? "session" : null;
 
 // Helper menentukan tipe jawaban dari teks pertanyaan
 const determineAnswerType = (questionText: string) => {
@@ -62,7 +56,7 @@ export default function DetailEditLaporanPage() {
   const fetchData = async () => {
     setIsLoading(true);
     const token = getCookie("token");
-    const baseURL = process.env.NEXT_PUBLIC_API_URL;
+    const baseURL = "/api/backend";
     
     try {
       // Fetch detail laporan
@@ -164,7 +158,7 @@ export default function DetailEditLaporanPage() {
     formData.append("file", file);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${id}/upload/${qId}`, {
+      const res = await fetch(`/api/backend/reports/${id}/upload/${qId}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData
@@ -197,7 +191,7 @@ export default function DetailEditLaporanPage() {
     const token = getCookie("token");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${id}/attachments/${qId}/view`, {
+      const res = await fetch(`/api/backend/reports/${id}/attachments/${qId}/view`, {
         headers: { "Authorization": `Bearer ${token}` },
       });
 
@@ -266,7 +260,7 @@ export default function DetailEditLaporanPage() {
     try {
       for (const qId of clearedAnswerIds) {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/reports/${id}/answers/${qId}`,
+          `/api/backend/reports/${id}/answers/${qId}`,
           {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` },
@@ -279,7 +273,7 @@ export default function DetailEditLaporanPage() {
         }
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/reports/${id}`, {
+      const res = await fetch(`/api/backend/reports/${id}`, {
         method: "PUT",
         headers: { 
           "Authorization": `Bearer ${token}`,

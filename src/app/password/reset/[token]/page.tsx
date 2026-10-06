@@ -39,7 +39,7 @@ export function ResetPasswordContent({ initialToken, initialEmail }: ResetPasswo
     setIsLoading(true);
     setErrorMsg("");
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password`, {
+      const response = await fetch(`/api/backend/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, email, password, password_confirmation: confirmation }),
