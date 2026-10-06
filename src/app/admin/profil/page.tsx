@@ -22,8 +22,10 @@ const readApiResponse = async (res: Response) => {
 const getAvatarUrl = (avatarUrl: string | null | undefined, version = 0) => {
   if (!avatarUrl) return "/images/user.png";
 
-  const apiUrl = "/api/backend";
-  const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
+  const storageUrl =
+    process.env.NEXT_PUBLIC_STORAGE_URL ||
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") ||
+    "";
 
   let cleanPath = avatarUrl;
 
@@ -40,7 +42,7 @@ const getAvatarUrl = (avatarUrl: string | null | undefined, version = 0) => {
     cleanPath = "/" + cleanPath;
   }
 
-  const resolvedUrl = `${apiOrigin}${cleanPath}`;
+  const resolvedUrl = `${storageUrl.replace(/\/$/, "")}${cleanPath}`;
 
   return version ? `${resolvedUrl}${resolvedUrl.includes("?") ? "&" : "?"}v=${version}` : resolvedUrl;
 };
