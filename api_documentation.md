@@ -67,7 +67,7 @@ POST /api/auth/login
 | `password` | string | Ya |
 | `captcha` | string | Ya |
 | `captcha_key` | string | Ya |
-| `remember_me` | boolean | Tidak (default `false`) |
+| `remember` | boolean | Tidak (default `false`) |
 
 **Request Body:**
 ```json
@@ -76,11 +76,11 @@ POST /api/auth/login
   "password": "password123",
   "captcha": "aB3dEf",
   "captcha_key": "hash_dari_get_captcha",
-  "remember_me": true
+  "remember": true
 }
 ```
 
-> **Catatan `remember_me`:** jika `true`, token berlaku 30 hari (`expires_in: 2592000`). Jika `false`, token berlaku 1 jam (`expires_in: 3600`).
+> **Catatan `remember`:** jika `true`, token berlaku 14 hari (`expires_in: 1209600` secara default). Jika `false`, token berlaku 1 jam (`expires_in: 3600`). Nilai dapat diubah melalui `JWT_REMEMBER_TTL`.
 
 **Response 200:**
 ```json
@@ -143,24 +143,18 @@ Authorization: Bearer <token>
 
 #### Update Profile
 ```
-PUT /api/auth/me
 PUT /api/auth/me  (atau POST /api/auth/me dengan multipart/form-data)
 Authorization: Bearer <token>
 ```
-| Field | Type | Required |
-|---|---|---|
-| `name` | string | Ya |
 | Field | Type | Required | Keterangan |
 |---|---|---|---|
 | `name` | string | Opsional | Nama lengkap pengguna (maks 255 karakter) |
 | `avatar` | file (image) | Opsional | File gambar (jpeg, png, jpg, webp, maks 2MB) |
 | `delete_avatar` | boolean | Opsional | Set `true` untuk menghapus foto profil |
 
-**Request Body: **
 **Request Body (JSON):**
 ```json
 {
-  "name": "Budi Santoso"
   "name": "Budi Santoso",
   "delete_avatar": false
 }
@@ -188,6 +182,114 @@ Authorization: Bearer <token>
 ```
 
 #### Upload Avatar (Dedicated Endpoint)
+
+#### Request Perubahan Alamat Email Pelapor
+```
+POST /api/auth/me/email/change-request
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+```
+
+| Field | Type | Required | Keterangan |
+|---|---|---|---|
+| `new_email` | string/email | Ya | Alamat email baru, harus unik dan berbeda dari email saat ini |
+| `current_password` | string | Ya | Password saat ini untuk verifikasi kepemilikan akun |
+
+**Request Body:**
+```json
+{
+  "new_email": "budi.baru@example.com",
+  "current_password": "passwordlama123"
+}
+```
+
+**Response 202:**
+```json
+{
+  "message": "Email konfirmasi perubahan alamat telah dikirim ke alamat baru.",
+  "new_email": "budi.baru@example.com",
+  "expires_at": "2026-10-13T12:00:00+00:00"
+}
+```
+
+Token konfirmasi berlaku selama 60 menit dan hanya dapat digunakan satu kali. Jika request baru dibuat sebelum request sebelumnya dikonfirmasi, request konfirmasi aktif sebelumnya dibatalkan.
+
+**Response 422 jika password salah:**
+```json
+{
+  "message": "Password saat ini tidak sesuai."
+}
+```
+
+**Response 422 jika email sudah digunakan:**
+```json
+{
+  "message": "Alamat email tersebut sudah digunakan."
+}
+```
+
+**Response 503 jika email tidak dapat dikirim:**
+```json
+{
+  "message": "Email konfirmasi tidak dapat dikirim. Silakan coba lagi nanti."
+}
+```
+
+#### Konfirmasi Perubahan Alamat Email
+```
+POST /api/auth/confirm-email-change
+Content-Type: application/json
+```
+
+Endpoint ini tidak memerlukan Bearer Token karena token konfirmasi dikirim melalui email baru.
+
+Frontend menerima token dari tautan email:
+
+```
+{FRONTEND_URL}/confirm-email-change?token=<token>
+```
+
+Frontend membaca query parameter `token`, lalu mengirimkannya ke backend.
+
+**Request Body:**
+```json
+{
+  "token": "token_rahasia_dari_link_email"
+}
+```
+
+**Response 200:**
+```json
+{
+  "message": "Alamat email berhasil dikonfirmasi. Silakan login kembali dengan email baru.",
+  "email": "budi.baru@example.com",
+  "requires_relogin": true
+}
+```
+
+Setelah response berhasil:
+
+1. Frontend menghapus `access_token` dari localStorage/sessionStorage atau cookie.
+2. Frontend menghapus state user yang lama.
+3. Frontend mengarahkan pelapor ke halaman login.
+4. Pelapor login menggunakan alamat email baru.
+
+Backend juga melakukan logout dan blacklist terhadap JWT aktif setelah email berhasil diubah, jika JWT blacklist diaktifkan.
+
+**Response 400 jika token tidak valid/kedaluwarsa:**
+```json
+{
+  "message": "Token konfirmasi tidak valid atau sudah kedaluwarsa."
+}
+```
+
+**Response 422 jika email sudah diambil akun lain:**
+```json
+{
+  "message": "Alamat email tersebut sudah digunakan oleh akun lain."
+}
 ```
 POST /api/auth/me/avatar
 Authorization: Bearer <token>
@@ -1287,7 +1389,7 @@ Semua endpoint mengembalikan format error yang konsisten:
 5. **Draft**: Buat laporan dengan `submit: false` (atau tanpa field submit) untuk menyimpan sebagai draft. Panggil `POST /api/reports/{id}/submit` saat semua jawaban & file sudah lengkap.
 6. **Edit**: Laporan hanya bisa diedit jika status masih `pending`. Begitu admin mengubah ke `proses` atau `disetujui`, laporan terkunci.
 7. **Scoring**: Skor dihitung otomatis saat submit dan saat admin verifikasi. Total score menentukan kategori (1/2/3/tidak memenuhi).
-8. **Tetap Masuk (`remember_me`)**: Kirim `remember_me: true` saat login agar token berlaku 30 hari, bukan 1 jam.
+8. **Tetap Masuk (`remember`)**: Kirim `remember: true` saat login agar token memakai TTL Remember Me, default 14 hari, bukan 1 jam.
 9. **Alur upload file yang benar**: (1) `POST /api/reports` dengan `submit: false` & jawaban text/url saja → dapat `report.id`, (2) upload tiap file ke `POST /api/reports/{id}/upload/{questionId}` (multipart), (3) `POST /api/reports/{id}/submit` untuk finalisasi. Jangan mengirim file binary di dalam array `answers`.
 10. **Jangan tertukar konteks route**: jika frontend memakai halaman admin, gunakan endpoint admin. Jika frontend memakai halaman pelapor, gunakan endpoint pelapor. Kalau route yang dipanggil tidak sesuai role, backend akan membalas `403` dengan pesan seperti `Anda tidak memiliki akses.`
 11. **Jangan membuka path mentah sebagai route API**: untuk preview lampiran gunakan `GET /api/reports/{reportId}/attachments/{questionId}/view`, untuk download gunakan `.../download`. Jangan menambahkan prefix `/api/storage/` atau menggandakan `/storage` di frontend.

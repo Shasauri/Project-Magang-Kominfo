@@ -51,6 +51,7 @@ export default function ProfilPelaporPage() {
   // State untuk form Informasi Pribadi
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingAvatar, setIsSavingAvatar] = useState(false);
   const [avatarVersion, setAvatarVersion] = useState(0);
@@ -164,6 +165,11 @@ export default function ProfilPelaporPage() {
   // Handler Simpan Profil
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    const emailChanged = email.trim().toLowerCase() !== String(userData?.email || "").trim().toLowerCase();
+    if (emailChanged && !emailPassword) {
+      setErrorMessage("Masukkan kata sandi saat ini untuk mengganti email.");
+      return;
+    }
     setIsSavingProfile(true);
     setSuccessMessage("");
     setErrorMessage("");
@@ -177,19 +183,42 @@ export default function ProfilPelaporPage() {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ name, email })
+        body: JSON.stringify({ name })
       });
 
       if (res.ok) {
-        setSuccessMessage("Profil Berhasil Diperbarui");
-        setTimeout(() => setSuccessMessage(""), 2000);
-        const updatedData = await res.json();
+        const updatedData = await readApiResponse(res);
         if (updatedData.user) setUserData(updatedData.user);
+
+        if (emailChanged) {
+          const emailRes = await fetch(`/api/backend/auth/me/email/change-request`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              new_email: email.trim(),
+              current_password: emailPassword
+            })
+          });
+          const emailData = await readApiResponse(emailRes);
+          if (!emailRes.ok) {
+            setErrorMessage(emailData.message || "Gagal meminta perubahan alamat email.");
+            return;
+          }
+
+          setEmailPassword("");
+          setSuccessMessage("Tautan konfirmasi perubahan email telah dikirim ke alamat baru.");
+        } else {
+          setSuccessMessage("Profil Berhasil Diperbarui");
+        }
+        setTimeout(() => setSuccessMessage(""), 3000);
       } else {
-        const err = await res.json();
+        const err = await readApiResponse(res);
         setErrorMessage(err.message || "Gagal memperbarui profil.");
       }
     } catch (error) {
+      console.error("Gagal memperbarui profil:", error);
       setErrorMessage("Terjadi kesalahan jaringan.");
     } finally {
       setIsSavingProfile(false);
@@ -368,6 +397,22 @@ export default function ProfilPelaporPage() {
                     required
                   />
                 </div>
+                {email.trim().toLowerCase() !== String(userData?.email || "").trim().toLowerCase() && (
+                  <div className="mt-3">
+                    <Label className="mb-2 text-xs">Kata Sandi Saat Ini</Label>
+                    <Input
+                      type="password"
+                      value={emailPassword}
+                      onChange={(e) => setEmailPassword(e.target.value)}
+                      placeholder="Masukkan kata sandi untuk konfirmasi"
+                      className="h-auto rounded-xl bg-slate-50/50 px-4 py-3 text-sm"
+                      required
+                    />
+                    <p className="mt-1 text-xs text-slate-500">
+                      Tautan konfirmasi akan dikirim ke alamat email baru.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
