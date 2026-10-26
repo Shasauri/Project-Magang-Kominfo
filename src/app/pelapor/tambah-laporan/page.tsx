@@ -25,9 +25,24 @@ const isNegativeAnswer = (value: string | undefined) => {
   return normalizedValue.startsWith("tidak") || normalizedValue === "ada tanpa ukw";
 };
 
-const isSkippedWhenPreviousAnswerIsNo = (question: any) => {
-  const answerType = determineAnswerType(question.question_text);
-  return answerType === "file" || answerType === "url";
+const isSocialMediaLinkQuestion = (question: { question_text?: string }) =>
+  question.question_text?.toLowerCase().includes("link sosial media");
+
+const isFollowerQuestion = (question: { question_text?: string }) => {
+  const text = question.question_text?.toLowerCase() || "";
+  return text.includes("jumlah pengikut") && text.includes("akun resmi media");
+};
+
+const isSkippedWhenPreviousAnswerIsNo = (
+  question: { question_text?: string },
+  previousQuestion?: { question_text?: string }
+) => {
+  const answerType = determineAnswerType(question.question_text || "");
+  return (
+    answerType === "file" ||
+    answerType === "url" ||
+    (previousQuestion && isSocialMediaLinkQuestion(previousQuestion) && isFollowerQuestion(question))
+  );
 };
 
 const getResponseErrorMessage = async (response: Response, fallback: string) => {
@@ -74,7 +89,7 @@ function TambahLaporanContent() {
   // State Data Tahap 2
   const [questions, setQuestions] = useState<any[]>([]);
   // answers menyimpan tipe, value (string path/teks), dan nama file asli (untuk UI)
-  const [answers, setAnswers] = useState<{ [key: number]: { value: string, type: string, fileName?: string } }>({});
+  const [answers, setAnswers] = useState<{ [key: number]: { value: string, type: string, fileName?: string, selectedOption?: string } }>({});
   const [pendingFiles, setPendingFiles] = useState<{ [key: number]: File }>({});
   const [uploadingFiles] = useState<{ [key: number]: boolean }>({});
   const [fileErrors, setFileErrors] = useState<{ [key: number]: string }>({});
@@ -166,14 +181,44 @@ function TambahLaporanContent() {
   const handleTextChange = (qId: number, value: string, questionText: string) => {
     const type = determineAnswerType(questionText);
     setAnswers(prev => {
-      const nextAnswers = { ...prev, [qId]: { value, type } };
+      const nextAnswers = {
+        ...prev,
+        [qId]: { value, type, selectedOption: prev[qId]?.selectedOption },
+      };
+      const questionIndex = questions.findIndex((question) => question.id === qId);
+      const nextQuestion = questions[questionIndex + 1];
+      const currentQuestion = questions[questionIndex];
+
+      if (
+        isNegativeAnswer(value) &&
+        nextQuestion &&
+        isSkippedWhenPreviousAnswerIsNo(nextQuestion, currentQuestion)
+      ) {
+        delete nextAnswers[nextQuestion.id];
+      }
+
+      return nextAnswers;
+    });
+  };
+
+  const handleOptionChange = (qId: number, value: string, questionText: string) => {
+    setAnswers(prev => {
+      const currentAnswer = prev[qId];
+      const nextAnswers = {
+        ...prev,
+        [qId]: {
+          value: isSocialMediaLinkQuestion({ question_text: questionText }) ? currentAnswer?.value || "" : value,
+          type: determineAnswerType(questionText),
+          selectedOption: value,
+        },
+      };
       const questionIndex = questions.findIndex((question) => question.id === qId);
       const nextQuestion = questions[questionIndex + 1];
 
       if (
         isNegativeAnswer(value) &&
         nextQuestion &&
-        isSkippedWhenPreviousAnswerIsNo(nextQuestion)
+        isSkippedWhenPreviousAnswerIsNo(nextQuestion, questions[questionIndex])
       ) {
         delete nextAnswers[nextQuestion.id];
       }
@@ -216,11 +261,13 @@ function TambahLaporanContent() {
     setSubmitNotification(null);
     setSubmitErrorMessage("");
 
-    const unansweredMandatory = visibleQuestions.filter(
-      (q) => isRequiredQuestion(q) && (
-        (!answers[q.id] || !answers[q.id].value?.trim()) && !pendingFiles[q.id]
-      )
-    );
+    const unansweredMandatory = visibleQuestions.filter((q) => {
+      const answer = answers[q.id];
+      const answerValue = isSocialMediaLinkQuestion(q) && isNegativeAnswer(answer?.selectedOption)
+        ? answer.selectedOption
+        : answer?.value;
+      return isRequiredQuestion(q) && !answerValue?.trim() && !pendingFiles[q.id];
+    });
     
     if (unansweredMandatory.length > 0) {
       const unansweredNumbers = unansweredMandatory.map(
@@ -242,12 +289,16 @@ function TambahLaporanContent() {
     const baseURL = "/api/backend";
     
     const formattedAnswers = Object.entries(answers)
-      .filter(([, data]) => data.type !== "file" && data.value.trim())
       .map(([qId, data]) => ({
         question_id: Number(qId),
-        answer_value: data.value,
-        answer_type: data.type
-      }));
+        answer_value: data.selectedOption && isNegativeAnswer(data.selectedOption)
+          ? data.selectedOption
+          : data.value,
+        answer_type: data.selectedOption && isNegativeAnswer(data.selectedOption)
+          ? "text"
+          : data.type
+      }))
+      .filter((data) => data.answer_type !== "file" && data.answer_value.trim());
 
     try {
       // Buat draft lebih dulu agar backend memiliki reportId untuk upload file.
@@ -306,9 +357,10 @@ function TambahLaporanContent() {
   };
 
   const visibleQuestions = questions.filter((question, index) => {
-    if (index === 0 || !isSkippedWhenPreviousAnswerIsNo(question)) return true;
+    if (index === 0 || !isSkippedWhenPreviousAnswerIsNo(question, questions[index - 1])) return true;
 
-    const previousAnswer = answers[questions[index - 1].id]?.value;
+    const previousAnswer = answers[questions[index - 1].id]?.selectedOption
+      || answers[questions[index - 1].id]?.value;
     return !isNegativeAnswer(previousAnswer);
   });
 
@@ -316,6 +368,7 @@ function TambahLaporanContent() {
     const ans = answers[qId];
     if (pendingFiles[qId]) return true;
     if (!ans) return false;
+    if (ans.selectedOption && isNegativeAnswer(ans.selectedOption)) return true;
     if (ans.type === "file") return Boolean(ans.fileName || (ans.value && ans.value.trim() !== ""));
     return Boolean(ans.value && ans.value.trim() !== "");
   };
@@ -403,6 +456,10 @@ function TambahLaporanContent() {
                 const hasOptions = q.scoring_rules && q.scoring_rules.length > 0;
                 const ans = answers[q.id];
                 const isUploading = uploadingFiles[q.id];
+                const showTextInput = qType !== "file" && (
+                  !hasOptions ||
+                  (isSocialMediaLinkQuestion(q) && !isNegativeAnswer(ans?.selectedOption))
+                );
 
                 return (
                   <Card key={q.id} className="rounded-3xl border border-slate-100 p-6">
@@ -413,8 +470,8 @@ function TambahLaporanContent() {
                       {/* Tipe: Radio Button */}
                       {hasOptions && (
                         <RadioGroup
-                          value={ans?.value || ""}
-                          onValueChange={(value) => handleTextChange(q.id, value, q.question_text)}
+                          value={ans?.selectedOption || ans?.value || ""}
+                          onValueChange={(value) => handleOptionChange(q.id, value, q.question_text)}
                           className="flex flex-col gap-3 pl-2"
                         >
                           {q.scoring_rules.map((rule: any) => (
@@ -468,7 +525,7 @@ function TambahLaporanContent() {
                       )}
 
                       {/* Tipe: Text Input Biasa / URL */}
-                      {!hasOptions && qType !== "file" && (
+                      {showTextInput && (
                         <input 
                           type="text"
                           value={ans?.value || ""}

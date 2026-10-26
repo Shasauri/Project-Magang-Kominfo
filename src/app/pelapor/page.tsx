@@ -141,7 +141,7 @@ export default function PelaporDashboardPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-4">
           <div className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-xl">
             <div className="border-b border-slate-100 px-6 py-5">
-              <h2 className="text-base font-bold text-slate-900">Tambah Laporan Media Baru</h2>
+              <h2 className="text-base font-bold text-slate-900">Tambah Proposal Media Baru</h2>
               <p className="mt-1 text-[10px] text-slate-500">Pilih jenis dan nama media yang ingin dilaporkan</p>
             </div>
 
@@ -278,7 +278,7 @@ export default function PelaporDashboardPage() {
                   onClick={handleOpenAddReportModal}
                   className="bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs py-2 px-4 rounded-full transition-colors"
                 >
-                  Tambah Laporan
+                  Tambah Proposal
                 </button>
               </div>
 

@@ -28,9 +28,24 @@ const isNegativeAnswer = (value: string | undefined) =>
     );
   })();
 
-const isAttachmentQuestion = (question: any) => {
-  const answerType = determineAnswerType(question.question_text);
-  return answerType === "file" || answerType === "url";
+const isSocialMediaLinkQuestion = (question: { question_text?: string }) =>
+  question.question_text?.toLowerCase().includes("link sosial media");
+
+const isFollowerQuestion = (question: { question_text?: string }) => {
+  const text = question.question_text?.toLowerCase() || "";
+  return text.includes("jumlah pengikut") && text.includes("akun resmi media");
+};
+
+const isSkippedWhenPreviousAnswerIsNo = (
+  question: { question_text?: string },
+  previousQuestion?: { question_text?: string }
+) => {
+  const answerType = determineAnswerType(question.question_text || "");
+  return (
+    answerType === "file" ||
+    answerType === "url" ||
+    (previousQuestion && isSocialMediaLinkQuestion(previousQuestion) && isFollowerQuestion(question))
+  );
 };
 
 export default function DetailEditLaporanPage() {
@@ -46,7 +61,7 @@ export default function DetailEditLaporanPage() {
   const [questions, setQuestions] = useState<any[]>([]);
   
   // State untuk form edit
-  const [answersForm, setAnswersForm] = useState<{ [key: number]: { value: string, type: string, fileName?: string } }>({});
+  const [answersForm, setAnswersForm] = useState<{ [key: number]: { value: string, type: string, fileName?: string, selectedOption?: string } }>({});
   const [uploadingFiles, setUploadingFiles] = useState<{ [key: number]: boolean }>({});
   const [clearedAnswerIds, setClearedAnswerIds] = useState<Set<number>>(new Set());
   const [fileErrors, setFileErrors] = useState<{ [key: number]: string }>({});
@@ -79,18 +94,24 @@ export default function DetailEditLaporanPage() {
         headers: { "Authorization": `Bearer ${token}` }
       });
       
-      if (qRes.ok) {
-        const qData = await qRes.json();
-        setQuestions(qData);
-      }
+      const qData = qRes.ok ? await qRes.json() : [];
+      setQuestions(qData);
 
       // Format data jawaban ke state form
       const initialAnswers: any = {};
       if (report.answers && Array.isArray(report.answers)) {
         report.answers.forEach((ans: any) => {
+          const questionText = qData.find((question: any) => question.id === ans.question_id)?.question_text;
+          const isSocialMediaLink = isSocialMediaLinkQuestion({ question_text: questionText });
+          const isNoAnswer = isNegativeAnswer(ans.answer_value);
           initialAnswers[ans.question_id] = {
-            value: ans.answer_value,
+            value: isSocialMediaLink && (isNoAnswer || ans.answer_value?.trim().toLowerCase() === "ya")
+              ? ""
+              : ans.answer_value || "",
             type: ans.answer_type,
+            selectedOption: isSocialMediaLink
+              ? (isNoAnswer ? ans.answer_value : "Ya")
+              : undefined,
             fileName: ans.answer_type === 'file' && ans.answer_value ? ans.answer_value.split('/').pop() : ''
           };
         });
@@ -117,11 +138,16 @@ export default function DetailEditLaporanPage() {
     const questionIndex = questions.findIndex((question) => question.id === qId);
     const nextQuestion = questions[questionIndex + 1];
     const shouldClearNextAttachment = Boolean(
-      isNegativeAnswer(value) && nextQuestion && isAttachmentQuestion(nextQuestion)
+      isNegativeAnswer(value) &&
+      nextQuestion &&
+      isSkippedWhenPreviousAnswerIsNo(nextQuestion, questions[questionIndex])
     );
 
     setAnswersForm(prev => {
-      const nextAnswers = { ...prev, [qId]: { value, type } };
+      const nextAnswers = {
+        ...prev,
+        [qId]: { value, type, selectedOption: prev[qId]?.selectedOption },
+      };
       if (shouldClearNextAttachment) {
         delete nextAnswers[nextQuestion.id];
       }
@@ -131,6 +157,36 @@ export default function DetailEditLaporanPage() {
     if (!shouldClearNextAttachment) return;
 
     setClearedAnswerIds(prev => new Set(prev).add(nextQuestion.id));
+  };
+
+  const handleOptionChange = (qId: number, value: string, questionText: string) => {
+    const questionIndex = questions.findIndex((question) => question.id === qId);
+    const nextQuestion = questions[questionIndex + 1];
+    const shouldClearNextQuestion = Boolean(
+      isNegativeAnswer(value) &&
+      nextQuestion &&
+      isSkippedWhenPreviousAnswerIsNo(nextQuestion, questions[questionIndex])
+    );
+
+    setAnswersForm(prev => {
+      const currentAnswer = prev[qId];
+      const nextAnswers = {
+        ...prev,
+        [qId]: {
+          value: isSocialMediaLinkQuestion({ question_text: questionText }) ? currentAnswer?.value || "" : value,
+          type: determineAnswerType(questionText),
+          selectedOption: value,
+        },
+      };
+      if (shouldClearNextQuestion) {
+        delete nextAnswers[nextQuestion.id];
+      }
+      return nextAnswers;
+    });
+
+    if (shouldClearNextQuestion) {
+      setClearedAnswerIds(prev => new Set(prev).add(nextQuestion.id));
+    }
   };
 
   // 3. Handler Upload File On-The-Fly
@@ -236,11 +292,14 @@ export default function DetailEditLaporanPage() {
     // Susun jawaban (hanya ambil yang terisi)
     const formattedAnswers: any[] = [];
     Object.entries(answersForm).forEach(([qId, data]) => {
-      if (data && data.value !== "") {
+      const answerValue = data.selectedOption && isNegativeAnswer(data.selectedOption)
+        ? data.selectedOption
+        : data.value;
+      if (data && answerValue !== "") {
         formattedAnswers.push({
           question_id: Number(qId),
-          answer_value: data.value,
-          answer_type: data.type
+          answer_value: answerValue,
+          answer_type: data.selectedOption && isNegativeAnswer(data.selectedOption) ? "text" : data.type
         });
       }
     });
@@ -312,10 +371,13 @@ export default function DetailEditLaporanPage() {
     fetchData(); // Refresh setelah notifikasi ditutup agar modal tetap terlihat.
   };
 
-  const answeredCount = Object.values(answersForm).filter(a => a && a.value !== "").length;
+  const answeredCount = Object.values(answersForm).filter(a =>
+    a && (a.value !== "" || Boolean(a.selectedOption))
+  ).length;
   const visibleQuestions = questions.filter((question, index) => {
-    if (index === 0 || !isAttachmentQuestion(question)) return true;
-    return !isNegativeAnswer(answersForm[questions[index - 1].id]?.value);
+    if (index === 0 || !isSkippedWhenPreviousAnswerIsNo(question, questions[index - 1])) return true;
+    const previousAnswer = answersForm[questions[index - 1].id];
+    return !isNegativeAnswer(previousAnswer?.selectedOption || previousAnswer?.value);
   });
   const totalQuestions = visibleQuestions.length;
   const isPending = reportData.status === "pending";
@@ -392,6 +454,10 @@ export default function DetailEditLaporanPage() {
             const hasOptions = q.scoring_rules && q.scoring_rules.length > 0;
             const ansState = answersForm[q.id];
             const isUploading = uploadingFiles[q.id];
+            const showTextInput = qType !== "file" && (
+              !hasOptions ||
+              (isSocialMediaLinkQuestion(q) && !isNegativeAnswer(ansState?.selectedOption))
+            );
 
             return (
               <Card key={q.id} className={`rounded-3xl border p-6 ${isEditing ? 'border-blue-100 ring-1 ring-blue-50' : 'border-slate-100'} transition-all`}>
@@ -406,8 +472,8 @@ export default function DetailEditLaporanPage() {
                     <div className="flex flex-col gap-3 pl-2">
                       {q.scoring_rules.map((rule: any) => (
                         <label key={rule.id} className={`flex items-center gap-3 group ${isEditing ? 'cursor-pointer' : 'cursor-not-allowed opacity-90'}`}>
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${ansState?.value === rule.answer_option ? 'border-blue-600' : 'border-slate-300'}`}>
-                            {ansState?.value === rule.answer_option && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>}
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${ansState?.selectedOption === rule.answer_option || (!ansState?.selectedOption && ansState?.value === rule.answer_option) ? 'border-blue-600' : 'border-slate-300'}`}>
+                            {(ansState?.selectedOption === rule.answer_option || (!ansState?.selectedOption && ansState?.value === rule.answer_option)) && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>}
                           </div>
                           <input 
                             type="radio" 
@@ -415,7 +481,7 @@ export default function DetailEditLaporanPage() {
                             value={rule.answer_option} 
                             disabled={!isEditing}
                             className="hidden"
-                            onChange={() => handleTextChange(q.id, rule.answer_option, q.question_text)}
+                            onChange={() => handleOptionChange(q.id, rule.answer_option, q.question_text)}
                           />
                           <span className={`text-xs font-semibold ${!isEditing ? 'text-slate-500' : 'text-slate-700'}`}>{rule.answer_option}</span>
                         </label>
@@ -474,7 +540,7 @@ export default function DetailEditLaporanPage() {
                   )}
 
                   {/* Tipe: Text Biasa / URL */}
-                  {!hasOptions && qType !== "file" && (
+                  {showTextInput && (
                     <input 
                       type="text"
                       value={ansState?.value || ""}
