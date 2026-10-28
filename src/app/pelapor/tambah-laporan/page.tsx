@@ -204,6 +204,12 @@ function TambahLaporanContent() {
   const handleOptionChange = (qId: number, value: string, questionText: string) => {
     setAnswers(prev => {
       const currentAnswer = prev[qId];
+      if (currentAnswer?.selectedOption === value) {
+        const nextAnswers = { ...prev };
+        delete nextAnswers[qId];
+        return nextAnswers;
+      }
+
       const nextAnswers = {
         ...prev,
         [qId]: {
@@ -373,6 +379,11 @@ function TambahLaporanContent() {
     return Boolean(ans.value && ans.value.trim() !== "");
   };
 
+  const isFileQuestionLocked = (question: { id: number }) => {
+    const questionIndex = questions.findIndex((item) => item.id === question.id);
+    return questionIndex > 0 && !isQuestionAnswered(questions[questionIndex - 1].id);
+  };
+
   const answeredCount = visibleQuestions.filter((question) => isQuestionAnswered(question.id)).length;
   const totalQuestions = visibleQuestions.length;
 
@@ -456,6 +467,7 @@ function TambahLaporanContent() {
                 const hasOptions = q.scoring_rules && q.scoring_rules.length > 0;
                 const ans = answers[q.id];
                 const isUploading = uploadingFiles[q.id];
+                const isFileLocked = qType === "file" && isFileQuestionLocked(q);
                 const showTextInput = qType !== "file" && (
                   !hasOptions ||
                   (isSocialMediaLinkQuestion(q) && !isNegativeAnswer(ans?.selectedOption))
@@ -476,7 +488,14 @@ function TambahLaporanContent() {
                         >
                           {q.scoring_rules.map((rule: any) => (
                             <label key={rule.id} className="flex cursor-pointer items-center gap-3 text-xs font-semibold text-slate-700">
-                              <RadioGroupItem value={rule.answer_option} />
+                              <RadioGroupItem
+                                value={rule.answer_option}
+                                onClick={() => {
+                                  if (ans?.selectedOption === rule.answer_option) {
+                                    handleOptionChange(q.id, rule.answer_option, q.question_text);
+                                  }
+                                }}
+                              />
                               {rule.answer_option}
                             </label>
                           ))}
@@ -486,9 +505,13 @@ function TambahLaporanContent() {
                       {/* Tipe: File Upload */}
                       {!hasOptions && qType === "file" && (
                         <div>
-                          <p className="text-[10px] text-slate-400 mb-3">Upload 1 file yang didukung: PDF. Maks 5 MB.</p>
+                          <p className="text-[10px] text-slate-400 mb-3">
+                            {isFileLocked
+                              ? "Jawab pertanyaan sebelumnya terlebih dahulu."
+                              : "Upload 1 file yang didukung: PDF. Maks 5 MB."}
+                          </p>
                           <div className="flex items-center gap-4">
-                            <label className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2 border text-xs font-bold rounded-lg transition-colors ${isUploading ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-blue-600 text-blue-600 hover:bg-blue-50'}`}>
+                            <label className={`inline-flex items-center gap-2 px-4 py-2 border text-xs font-bold rounded-lg transition-colors ${isUploading || isFileLocked ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'cursor-pointer border-blue-600 text-blue-600 hover:bg-blue-50'}`}>
                               {isUploading ? (
                                 <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                               ) : (
@@ -498,7 +521,7 @@ function TambahLaporanContent() {
                               <input 
                                 type="file" 
                                 accept=".pdf"
-                                disabled={isUploading}
+                                disabled={isUploading || isFileLocked}
                                 className="hidden" 
                                 onChange={(e) => {
                                   if (e.target.files && e.target.files[0]) {
