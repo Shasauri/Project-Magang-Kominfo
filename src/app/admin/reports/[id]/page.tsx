@@ -165,6 +165,8 @@ export default function DetailLaporanAdminPage() {
             const qId = qData.id || ansItem.question_id;
             const isFile = ansItem.answer_type === "file";
             const isUrl = ansItem.answer_type === "url";
+            const isSocialMediaLink = qData.question_text?.toLowerCase().includes("link sosial media");
+            const isSocialMediaNo = ansItem.answer_value?.trim().toLowerCase().startsWith("tidak");
             const isPdfLoading = loadingPdfId === qId;
             const scoringRules = qData.scoring_rules || [];
             const hasScoringRules = scoringRules.length > 0;
@@ -181,7 +183,27 @@ export default function DetailLaporanAdminPage() {
                     {hasScoringRules && <span className="text-center">Score</span>}
                   </div>
                   
-                  {hasScoringRules ? (
+                  {isSocialMediaLink ? (
+                    <div className="space-y-3 bg-slate-50/70 px-4 py-4 text-sm font-medium text-slate-700">
+                      <p>
+                        Pilihan: <span className="font-semibold">{isSocialMediaNo ? "Tidak" : "Ya"}</span>
+                      </p>
+                      {!isSocialMediaNo && ansItem.answer_value && (
+                        isSafeExternalUrl(ansItem.answer_value) ? (
+                          <a
+                            href={ansItem.answer_value}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block break-all font-medium text-blue-600 hover:underline"
+                          >
+                            {ansItem.answer_value}
+                          </a>
+                        ) : (
+                          <p className="font-medium text-slate-500">Tautan tidak valid</p>
+                        )
+                      )}
+                    </div>
+                  ) : hasScoringRules ? (
                     <div className="divide-y divide-slate-100">
                       {scoringRules.map((rule: any) => {
                         const isSelected = ansItem.answer_value === rule.answer_option;

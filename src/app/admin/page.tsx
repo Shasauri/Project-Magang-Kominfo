@@ -388,7 +388,7 @@ export default function DashboardPage() {
               className="flex items-center gap-2 py-2.5 px-4 rounded-xl bg-[#009b77] hover:bg-[#008263] text-white font-bold text-xs shadow-md shadow-[#009b77]/25 transition-all cursor-pointer shrink-0"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" /></svg>
-              Cetak Rekap Laporan
+              Cetak Rekap Proposal
             </button>
           </div>
 
@@ -693,8 +693,8 @@ export default function DashboardPage() {
               </div>
               <div>
                 <DialogHeader>
-                  <DialogTitle className="text-lg font-bold text-slate-900">Cetak Rekap Laporan</DialogTitle>
-                  <DialogDescription className="mt-0.5 text-xs">Lakukan Cetak Hasil Laporan</DialogDescription>
+                  <DialogTitle className="text-lg font-bold text-slate-900">Cetak Rekap Proposal</DialogTitle>
+                  <DialogDescription className="mt-0.5 text-xs">Lakukan Cetak Hasil Proposal</DialogDescription>
                 </DialogHeader>
               </div>
             </div>
@@ -702,7 +702,7 @@ export default function DashboardPage() {
             {/* Deskripsi */}
             <div className="mb-6 space-y-1">
               <p className="text-xs text-slate-500 font-medium">
-                Mencetak rekap laporan berdasarkan Filter Kategori Media
+                Mencetak rekap proposal berdasarkan Filter Kategori Media
               </p>
               <p className="text-[11px] text-slate-400 italic">
                 *Laporan hasil rekap akan dicetak kedalam bentuk .xlsx
