@@ -48,6 +48,17 @@ const isSkippedWhenPreviousAnswerIsNo = (
   );
 };
 
+const requiredQuestionIds = new Set([9, 15]);
+
+const isRequiredQuestion = (question: { id: number; question_text?: string; is_mandatory?: boolean }) => {
+  const questionText = question.question_text?.toLowerCase() || "";
+  return (
+    question.is_mandatory ||
+    requiredQuestionIds.has(question.id) ||
+    questionText.includes("link sosial media")
+  );
+};
+
 export default function DetailEditLaporanPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -56,6 +67,7 @@ export default function DetailEditLaporanPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaveSuccessOpen, setIsSaveSuccessOpen] = useState(false);
+  const [incompleteMessage, setIncompleteMessage] = useState<string | null>(null);
   
   const [reportData, setReportData] = useState<any>(null);
   const [questions, setQuestions] = useState<any[]>([]);
@@ -286,6 +298,36 @@ export default function DetailEditLaporanPage() {
 
   // 5. Simpan Perubahan (Submit PUT Request)
   const handleSaveChanges = async () => {
+    const unansweredQuestions = visibleQuestions.filter((question) => {
+      const answer = answersForm[question.id];
+      const answerValue = isSocialMediaLinkQuestion(question) && isNegativeAnswer(answer?.selectedOption)
+        ? answer.selectedOption
+        : answer?.value;
+      const questionIndex = questions.findIndex((item) => item.id === question.id);
+      const isConditionallyVisible = questionIndex > 0 &&
+        isSkippedWhenPreviousAnswerIsNo(question, questions[questionIndex - 1]);
+
+      return (
+        (isRequiredQuestion(question) || isConditionallyVisible) &&
+        !answerValue?.trim() &&
+        !answer?.fileName
+      );
+    });
+
+    if (unansweredQuestions.length > 0) {
+      const unansweredNumbers = unansweredQuestions.map(
+        (question) => visibleQuestions.findIndex((item) => item.id === question.id) + 1
+      );
+      const formattedNumbers = unansweredNumbers.length === 1
+        ? `${unansweredNumbers[0]}`
+        : `${unansweredNumbers.slice(0, -1).join(", ")} dan ${unansweredNumbers[unansweredNumbers.length - 1]}`;
+
+      setIncompleteMessage(
+        `Harap lengkapi pertanyaan nomor ${formattedNumbers} sebelum menyimpan perubahan.`
+      );
+      return;
+    }
+
     setIsSaving(true);
     const token = getCookie("token");
     
@@ -384,6 +426,28 @@ export default function DetailEditLaporanPage() {
 
   return (
     <div className="flex w-full h-full relative bg-slate-50">
+      {incompleteMessage && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/30 p-4">
+          <div className="flex min-h-[220px] w-full max-w-sm flex-col items-center justify-center rounded-2xl bg-white px-8 py-7 text-center shadow-xl">
+            <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-red-500">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-7 w-7">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-1.5a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 16.5h.008v.008H12V16.5Z" />
+              </svg>
+            </div>
+            <p className="max-w-[240px] text-sm font-bold leading-snug text-slate-900">
+              {incompleteMessage}
+            </p>
+            <button
+              type="button"
+              onClick={() => setIncompleteMessage(null)}
+              className="mt-7 rounded-lg bg-red-600 px-7 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-red-700"
+            >
+              Kembali ke form
+            </button>
+          </div>
+        </div>
+      )}
+
       {isSaveSuccessOpen && (
         <Dialog open={isSaveSuccessOpen} onOpenChange={(open) => !open && setIsSaveSuccessOpen(false)}>
           <DialogContent className="max-w-sm rounded-2xl px-8 py-6 text-center">
