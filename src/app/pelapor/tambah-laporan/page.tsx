@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -76,6 +77,7 @@ function TambahLaporanContent() {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [hasConfirmedSubmission, setHasConfirmedSubmission] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitNotification, setSubmitNotification] = useState<"success" | "incomplete" | "error" | null>(null);
   const [submitErrorMessage, setSubmitErrorMessage] = useState("");
@@ -263,6 +265,8 @@ function TambahLaporanContent() {
   // 3. TAHAP 3: FINALISASI & SUBMIT LAPORAN
   // ---------------------------------------------------------
   const handleSubmitLaporan = async () => {
+    if (!hasConfirmedSubmission) return;
+
     setIsSubmitModalOpen(false);
     setSubmitNotification(null);
     setSubmitErrorMessage("");
@@ -386,6 +390,10 @@ function TambahLaporanContent() {
 
   const answeredCount = visibleQuestions.filter((question) => isQuestionAnswered(question.id)).length;
   const totalQuestions = visibleQuestions.length;
+  const openSubmitModal = () => {
+    setHasConfirmedSubmission(false);
+    setIsSubmitModalOpen(true);
+  };
 
   return (
     <div className="flex w-full h-full relative bg-slate-50">
@@ -565,7 +573,7 @@ function TambahLaporanContent() {
 
             <div className="mt-6 border-t border-slate-200 pt-4 xl:hidden">
               <Button
-                onClick={() => setIsSubmitModalOpen(true)}
+                onClick={openSubmitModal}
                 className="w-full rounded-xl bg-blue-600 py-3 text-sm text-white hover:bg-blue-700"
               >
                 Submit Laporan
@@ -599,7 +607,7 @@ function TambahLaporanContent() {
 
               <div className="mt-auto">
                 <Button
-                  onClick={() => setIsSubmitModalOpen(true)}
+                  onClick={openSubmitModal}
                   className="w-full rounded-xl bg-blue-600 py-3 text-sm text-white hover:bg-blue-700"
                 >
                   Submit Laporan
@@ -612,7 +620,12 @@ function TambahLaporanContent() {
 
       {/* ================= MODAL SUBMIT LAPORAN ================= */}
       {isSubmitModalOpen && (
-        <Dialog open={isSubmitModalOpen} onOpenChange={(open) => !open && setIsSubmitModalOpen(false)}>
+        <Dialog open={isSubmitModalOpen} onOpenChange={(open) => {
+          if (!open) {
+            setIsSubmitModalOpen(false);
+            setHasConfirmedSubmission(false);
+          }
+        }}>
           <DialogContent className="max-w-sm rounded-3xl p-4 text-center sm:p-8">
             <DialogHeader>
               <DialogTitle className="mb-3 text-lg font-bold text-slate-900">Apakah kamu yakin ingin submit laporan?</DialogTitle>
@@ -620,6 +633,15 @@ function TambahLaporanContent() {
               Anda masih dapat mengedit nya selagi status dalam keadaan pending dan belum di proses
               </DialogDescription>
             </DialogHeader>
+
+            <label htmlFor="submission-confirmation" className="mb-6 flex cursor-pointer items-start gap-3 text-left text-xs leading-relaxed text-slate-600">
+              <Checkbox
+                id="submission-confirmation"
+                checked={hasConfirmedSubmission}
+                onCheckedChange={(checked) => setHasConfirmedSubmission(checked === true)}
+              />
+              <span>saya menyatakan data yang dimasukkan adalah benar sesuai dengan aslinya</span>
+            </label>
             
             <div className="flex w-full flex-col-reverse gap-3 sm:flex-row">
               <Button
@@ -632,7 +654,7 @@ function TambahLaporanContent() {
               </Button>
               <Button
                 onClick={handleSubmitLaporan} 
-                disabled={isSubmitting}
+                disabled={isSubmitting || !hasConfirmedSubmission}
                 className="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-sm text-white hover:bg-blue-700"
               >
                 {isSubmitting ? (
