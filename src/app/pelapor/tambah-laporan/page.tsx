@@ -64,6 +64,7 @@ const requiredQuestionIds = new Set([9, 15]);
 const isRequiredQuestion = (question: any) => {
   const questionText = question.question_text?.toLowerCase() || "";
   return (
+    determineAnswerType(question.question_text || "") === "file" ||
     question.is_mandatory ||
     requiredQuestionIds.has(question.id) ||
     questionText.includes("link sosial media") ||
