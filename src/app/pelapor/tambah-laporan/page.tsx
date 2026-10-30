@@ -383,7 +383,11 @@ function TambahLaporanContent() {
     return Boolean(ans.value && ans.value.trim() !== "");
   };
 
-  const isFileQuestionLocked = (question: { id: number }) => {
+  const isFileQuestionLocked = (question: { id: number; question_text?: string }) => {
+    if (question.question_text?.toLowerCase().includes(PARTNERSHIP_OFFER_QUESTION)) {
+      return false;
+    }
+
     const questionIndex = questions.findIndex((item) => item.id === question.id);
     return questionIndex > 0 && !isQuestionAnswered(questions[questionIndex - 1].id);
   };
