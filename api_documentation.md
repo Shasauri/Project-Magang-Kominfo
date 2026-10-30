@@ -833,6 +833,7 @@ Authorization: Bearer <token>
 > | Wartawan/Biro Banjar | `Ada + UKW` / `Ada tanpa UKW` / `Tidak ada` |
 > | Usia media | `>4 tahun` / `2-4 tahun` / `<2 tahun` |
 > | Berita umum / Banjar | `Aktif` / `Tidak` |
+> | Link sosial media | `Ya` / `Tidak` (skor: 0, pengendali textfield URL & soal pengikut) |
 > | Jumlah pengikut | `>20.000` / `5.000 - 20.000` / `<5.000` |
 > | Halaman khusus/tayangan/siaran | `Ada` / `Tidak` |
 >
@@ -899,9 +900,14 @@ Body sama seperti `POST` (semua field opsional).
 >    - Kirim `"answer_value": null` atau `""` (string kosong).
 >    - Backend akan otomatis **menghapus berkas fisik dari storage** (jika bertipe `file`) dan **menghapus baris jawaban dari database**.
 > 2. **Auto-Cleanup Saat Memilih Jawaban Negatif / "Tidak":**
->    - Jika user mengubah pertanyaan ber-bukti dukung menjadi **"Tidak"** (misalnya Dewan Pers "Tidak", UKW Pemred "Tidak UKW Utama", Wartawan "Tidak ada", Berita Isu Umum/Khusus "Tidak"):
->    - Backend secara otomatis mendeteksi dan **menghapus berkas lampiran serta record jawaban bukti dukung opsional yang terhubung**, sehingga frontend tidak perlu khawatir ada berkas lama yang tertinggal.
-> 3. Hanya `answers` yang dikirim yang akan diperbarui. Jawaban lain tetap seperti sebelumnya.
+>    - Jika user mengubah pertanyaan ber-bukti dukung menjadi **"Tidak"** (misalnya Dewan Pers "Tidak", UKW Pemred "Tidak UKW Utama", Wartawan "Tidak ada", Berita Isu Umum/Khusus "Tidak", atau **Link sosial media "Tidak" / kosong**):
+>    - Backend secara otomatis mendeteksi dan **menghapus berkas lampiran serta record jawaban bukti dukung opsional atau soal lanjutan yang terhubung (seperti soal 'Jumlah pengikut...' yang otomatis dihapus jika Link sosial media bernilai 'Tidak')**, dan skor total otomatis dihitung ulang sehingga frontend tidak perlu khawatir ada data/skor lama yang tertinggal.
+> 3. **Alur Khusus Soal Media Sosial (Frontend):**
+>    - Urutan tampilan form: Soal **`Link sosial media`** ditampilkan sebelum soal **`Jumlah pengikut...`**.
+>    - Pada soal `Link sosial media`, sediakan opsi pilihan: **"Ya"** dan **"Tidak"**.
+>    - **Jika memilih "Tidak":** Sembunyikan textfield URL dan sembunyikan soal `Jumlah pengikut...`. Kirim `answer_value: "Tidak"` (skor: 0).
+>    - **Jika memilih "Ya":** Tampilkan textfield URL akun sosial media dan tampilkan soal pilihan `Jumlah pengikut...` (`>20.000` / `5.000 - 20.000` / `<5.000`).
+> 4. Hanya `answers` yang dikirim yang akan diperbarui. Jawaban lain tetap seperti sebelumnya.
 
 ---
 
@@ -976,20 +982,26 @@ Authorization: Bearer <token>
 ```
 Mengubah status laporan menjadi terkirim: memvalidasi semua pertanyaan wajib (`is_mandatory: true`), menyetel `submitted_at` = waktu sekarang, serta menghitung skor & kategori.
 
-> **⚠️ Validasi Soal Wajib (Mandatory Questions):**
-> Jika ada pertanyaan dengan `is_mandatory: true` yang belum diisi / bernilai kosong saat di-submit, backend akan mengembalikan **HTTP 422 Unprocessable Content**:
-> ```json
-> {
->   "message": "Beberapa pertanyaan wajib belum diisi.",
->   "errors": {
->     "answers": [
->       "Pertanyaan 'Nama Media' wajib diisi.",
->       "Pertanyaan 'Upload akta pendirian perusahaan (PDF, maks 5MB)' wajib diisi.",
->       "Pertanyaan 'Link sosial media' wajib diisi."
->     ]
->   }
-> }
-> ```
+> **⚠️ Validasi Soal Wajib & Kondisional:**
+> 1. **Soal Wajib (`is_mandatory: true`):**
+>    Jika ada pertanyaan wajib yang belum diisi saat di-submit, backend mengembalikan **HTTP 422 Unprocessable Content**:
+>    ```json
+>    {
+>      "message": "Beberapa pertanyaan wajib belum diisi.",
+>      "errors": {
+>        "answers": [
+>          "Pertanyaan 'Nama Media' wajib diisi.",
+>          "Pertanyaan 'Upload akta pendirian perusahaan (PDF, maks 5MB)' wajib diisi.",
+>          "Pertanyaan 'Upload surat penawaran kerjasama (PDF, maks 5MB)' wajib diisi."
+>        ]
+>      }
+>    }
+>    ```
+> 2. **Validasi Kondisional Sosial Media:**
+>    - Soal `Link sosial media` dan `Jumlah pengikut...` berstatus `is_mandatory: false`.
+>    - Jika pelapor memilih opsi **"Tidak"** atau mengosongkan link: Laporan **dapat langsung disubmit** tanpa error.
+>    - Jika pelapor memilih **"Ya" / mengisi URL sosial media**: Soal `Jumlah pengikut...` **wajib diisi**. Jika dikosongkan, backend mengembalikan error:
+>      `"Pertanyaan 'Jumlah pengikut pada akun resmi media di platform sosial media' wajib dipilih jika memiliki media sosial."`
 
 #### Upload File Lampiran (Sebelum Laporan Dibuat / Standalone)
 ```

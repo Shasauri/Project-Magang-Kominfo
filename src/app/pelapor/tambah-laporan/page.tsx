@@ -11,6 +11,8 @@ import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const getCookie = (name: string) => name === "token" ? "session" : null;
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+const PARTNERSHIP_OFFER_QUESTION = "upload surat penawaran kerjasama";
 
 // Helper menentukan answer_type dari teks pertanyaan
 const determineAnswerType = (questionText: string) => {
@@ -64,7 +66,8 @@ const isRequiredQuestion = (question: any) => {
   return (
     question.is_mandatory ||
     requiredQuestionIds.has(question.id) ||
-    questionText.includes("link sosial media")
+    questionText.includes("link sosial media") ||
+    questionText.includes(PARTNERSHIP_OFFER_QUESTION)
   );
 };
 
@@ -236,9 +239,6 @@ function TambahLaporanContent() {
   };
 
   const handleFileUpload = async (qId: number, file: File) => {
-    const MAX_SIZE_MB = 5;
-    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
-
     // Validasi tipe file
     if (file.type !== "application/pdf") {
       setFileErrors(prev => ({ ...prev, [qId]: "Hanya file PDF yang diizinkan." }));
@@ -248,8 +248,8 @@ function TambahLaporanContent() {
     }
 
     // Validasi ukuran file (maks 5 MB)
-    if (file.size > MAX_SIZE_BYTES) {
-      setFileErrors(prev => ({ ...prev, [qId]: `Ukuran file melebihi batas maksimal ${MAX_SIZE_MB} MB. Ukuran file saat ini: ${(file.size / 1024 / 1024).toFixed(2)} MB.` }));
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setFileErrors(prev => ({ ...prev, [qId]: `Ukuran file melebihi batas maksimal 5 MB. Ukuran file saat ini: ${(file.size / 1024 / 1024).toFixed(2)} MB.` }));
       setPendingFiles(prev => { const next = { ...prev }; delete next[qId]; return next; });
       setAnswers(prev => { const next = { ...prev }; delete next[qId]; return next; });
       return;

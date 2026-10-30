@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 
 // Helper Token
 const getCookie = (name: string) => name === "token" ? "session" : null;
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+const PARTNERSHIP_OFFER_QUESTION = "upload surat penawaran kerjasama";
 
 // Helper menentukan tipe jawaban dari teks pertanyaan
 const determineAnswerType = (questionText: string) => {
@@ -55,7 +57,8 @@ const isRequiredQuestion = (question: { id: number; question_text?: string; is_m
   return (
     question.is_mandatory ||
     requiredQuestionIds.has(question.id) ||
-    questionText.includes("link sosial media")
+    questionText.includes("link sosial media") ||
+    questionText.includes(PARTNERSHIP_OFFER_QUESTION)
   );
 };
 
@@ -203,9 +206,6 @@ export default function DetailEditLaporanPage() {
 
   // 3. Handler Upload File On-The-Fly
   const handleFileUpload = async (qId: number, file: File) => {
-    const MAX_SIZE_MB = 5;
-    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
-
     // Validasi tipe file
     if (file.type !== "application/pdf") {
       setFileErrors(prev => ({ ...prev, [qId]: "Hanya file PDF yang diizinkan." }));
@@ -213,8 +213,8 @@ export default function DetailEditLaporanPage() {
     }
 
     // Validasi ukuran file (maks 5 MB)
-    if (file.size > MAX_SIZE_BYTES) {
-      setFileErrors(prev => ({ ...prev, [qId]: `Ukuran file melebihi batas maksimal ${MAX_SIZE_MB} MB. Ukuran file saat ini: ${(file.size / 1024 / 1024).toFixed(2)} MB.` }));
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setFileErrors(prev => ({ ...prev, [qId]: `Ukuran file melebihi batas maksimal 5 MB. Ukuran file saat ini: ${(file.size / 1024 / 1024).toFixed(2)} MB.` }));
       return;
     }
 
