@@ -107,7 +107,11 @@ export default function DetailEditLaporanPage() {
       }
       
       const reportJson = await reportRes.json();
-      const report = reportJson.report || reportJson;
+      const report = reportJson?.report ?? reportJson;
+      if (!report || typeof report !== "object" || !report.media_type_id) {
+        throw new Error("Respons detail laporan tidak berisi data laporan yang valid.");
+      }
+
       setReportData(report);
       setIsRevisionConfirmed(report.is_revised === true);
 
@@ -140,7 +144,7 @@ export default function DetailEditLaporanPage() {
       }
       setAnswersForm(initialAnswers);
       setClearedAnswerIds(new Set());
-      setIsRevisionConfirmed(reportData.is_revised === true);
+      setIsRevisionConfirmed(report.is_revised === true);
 
     } catch (error) {
       console.error("Gagal mengambil data:", error);
