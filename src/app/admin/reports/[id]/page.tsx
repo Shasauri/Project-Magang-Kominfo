@@ -30,6 +30,8 @@ export default function DetailLaporanAdminPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<any>(null);
+  const [adminNotes, setAdminNotes] = useState("");
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
   
   // State untuk Preview PDF
   const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
@@ -47,7 +49,9 @@ export default function DetailLaporanAdminPage() {
         
         if (res.ok) {
           const data = await res.json();
-          setReportData(data.report || data);
+          const report = data.report || data;
+          setReportData(report);
+          setAdminNotes(report.admin_notes || "");
         } else {
           alert("Gagal memuat detail laporan atau laporan tidak ditemukan.");
           router.push("/admin/dashboard");
@@ -99,6 +103,39 @@ export default function DetailLaporanAdminPage() {
       URL.revokeObjectURL(selectedPdfUrl); // Mencegah memory leak
     }
     setSelectedPdfUrl(null);
+  };
+
+  const handleSaveNotes = async () => {
+    setIsSavingNotes(true);
+
+    try {
+      const res = await fetch(`/api/backend/admin/reports/${id}/notes`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `******`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ admin_notes: adminNotes }),
+      });
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: "Gagal menyimpan catatan." }));
+        throw new Error(error.message || "Gagal menyimpan catatan.");
+      }
+
+      const data = await res.json();
+      setReportData((previous: Record<string, unknown>) => ({
+        ...previous,
+        ...(data.report || {}),
+        admin_notes: adminNotes,
+      }));
+      alert("Catatan berhasil disimpan.");
+    } catch (error: unknown) {
+      console.error("Gagal menyimpan catatan:", error);
+      alert(error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan catatan.");
+    } finally {
+      setIsSavingNotes(false);
+    }
   };
 
   if (isLoading) {
@@ -157,6 +194,28 @@ export default function DetailLaporanAdminPage() {
             </div>
           </Card>
         </div>
+
+        <Card className="mb-6 max-w-4xl rounded-2xl border border-slate-100 p-5">
+          <h3 className="text-sm font-bold text-slate-800">Pesan untuk Pelapor</h3>
+          <p className="mt-1 text-xs text-slate-500">Sampaikan bagian form atau berkas yang masih perlu dilengkapi.</p>
+          <textarea
+            value={adminNotes}
+            onChange={(event) => setAdminNotes(event.target.value)}
+            placeholder="Catatan untuk Pelapor"
+            rows={4}
+            className="mt-4 w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition-colors focus:border-blue-500"
+          />
+          <div className="mt-3 flex justify-end">
+            <button
+              type="button"
+              onClick={handleSaveNotes}
+              disabled={isSavingNotes}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSavingNotes ? "Menyimpan..." : "Simpan Catatan"}
+            </button>
+          </div>
+        </Card>
 
         {/* List Jawaban Form */}
         <div className="space-y-6 max-w-4xl">

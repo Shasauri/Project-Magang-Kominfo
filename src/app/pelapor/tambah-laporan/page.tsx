@@ -13,11 +13,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 const getCookie = (name: string) => name === "token" ? "session" : null;
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const PARTNERSHIP_OFFER_QUESTION = "upload surat penawaran kerjasama";
+const INAPROC_LINK_QUESTION = "link inaproc";
+const SPT_PROOF_QUESTION = "bukti spt";
 
 // Helper menentukan answer_type dari teks pertanyaan
 const determineAnswerType = (questionText: string) => {
   const text = questionText.toLowerCase();
-  if (text.includes("upload") || text.includes("file")) return "file";
+  if (text.includes("upload") || text.includes("file") || text.includes(SPT_PROOF_QUESTION)) return "file";
   if (text.includes("link") || text.includes("url")) return "url";
   return "text";
 };
@@ -68,7 +70,9 @@ const isRequiredQuestion = (question: any) => {
     question.is_mandatory ||
     requiredQuestionIds.has(question.id) ||
     questionText.includes("link sosial media") ||
-    questionText.includes(PARTNERSHIP_OFFER_QUESTION)
+    questionText.includes(PARTNERSHIP_OFFER_QUESTION) ||
+    questionText.includes(INAPROC_LINK_QUESTION) ||
+    questionText.includes(SPT_PROOF_QUESTION)
   );
 };
 
@@ -566,7 +570,7 @@ function TambahLaporanContent() {
                           type="text"
                           value={ans?.value || ""}
                           onChange={(e) => handleTextChange(q.id, e.target.value, q.question_text)}
-                          placeholder="Jawaban anda"
+                          placeholder={q.question_text.toLowerCase().includes(INAPROC_LINK_QUESTION) ? "Masukkan link inaproc" : "Jawaban anda"}
                           className="w-full border-b border-slate-300 focus:border-blue-600 outline-none py-2 text-xs font-medium text-slate-700 bg-transparent transition-colors"
                         />
                       )}

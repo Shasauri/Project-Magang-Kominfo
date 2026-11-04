@@ -730,6 +730,9 @@ Authorization: Bearer <token>
 ```
 Bisa diakses oleh **pelapor**. Untuk panel admin, gunakan `GET /api/admin/reports/{id}`.
 
+> **Catatan Admin (`admin_notes`):**
+> Pada object laporan yang dikembalikan, terdapat field `admin_notes`. Jika admin memberikan masukan atau catatan revisi (misal file pendukung kurang atau perlu perbaikan), isi pesan admin akan tampil di field `admin_notes`. Jika belum ada catatan, bernilai `null`.
+
 > **Jawaban bertipe `file`** akan menyertakan field `file_url` untuk mengakses/menampilkan file yang di-upload:
 > ```json
 > {
@@ -992,7 +995,9 @@ Mengubah status laporan menjadi terkirim: memvalidasi semua pertanyaan wajib (`i
 >        "answers": [
 >          "Pertanyaan 'Nama Media' wajib diisi.",
 >          "Pertanyaan 'Upload akta pendirian perusahaan (PDF, maks 5MB)' wajib diisi.",
->          "Pertanyaan 'Upload surat penawaran kerjasama (PDF, maks 5MB)' wajib diisi."
+>          "Pertanyaan 'Upload surat penawaran kerjasama (PDF, maks 5MB)' wajib diisi.",
+>          "Pertanyaan 'Link inaproc' wajib diisi.",
+>          "Pertanyaan 'Upload bukti SPT (PDF, maks 5MB)' wajib diisi."
 >        ]
 >      }
 >    }
@@ -1320,14 +1325,54 @@ Body bisa berisi `answers` array dan/atau `media_type_id`.
 PUT /api/admin/reports/{id}/status
 Authorization: Bearer <token>
 ```
-| Field | Type | Required |
-|---|---|---|
-| `status` | string | Ya (`pending` / `proses` / `disetujui`) |
+Admin dapat memperbarui status laporan sekaligus mengirimkan pesan catatan/masukan ke pelapor (misalnya jika file pendukung kurang atau perlu direvisi).
+
+| Field | Type | Required | Keterangan |
+|---|---|---|---|
+| `status` | string | Ya | `pending` / `proses` / `disetujui` |
+| `admin_notes` | string | Tidak | Catatan/masukan dari admin untuk pelapor (bisa juga menggunakan alias `notes` / `catatan`) |
+
+**Request Body (contoh status dengan catatan revisi):**
+```json
+{
+  "status": "pending",
+  "admin_notes": "Berkas akta pendirian belum menyertakan lembar SK Kemenkumham dan sertifikat UKW kurang jelas. Mohon unggah ulang berkas yang valid."
+}
+```
+
+> **Catatan Notifikasi Email:**
+> Jika sistem mengirimkan email notifikasi perubahan status ke pelapor, isi `admin_notes` ini otomatis disertakan dalam email sehingga pelapor langsung mengetahui catatan/masukan dari admin.
+
+#### Update Catatan Laporan (Dedicated)
+```
+PUT /api/admin/reports/{id}/notes
+Authorization: Bearer <token>
+```
+Digunakan jika admin ingin menambah atau mengubah catatan masukan ke pelapor tanpa harus mengubah status laporan.
+
+| Field | Type | Required | Keterangan |
+|---|---|---|---|
+| `admin_notes` | string | Tidak | Pesan catatan untuk pelapor (bisa juga menggunakan alias `notes` / `catatan`). Isi `null` atau string kosong untuk menghapus catatan. |
 
 **Request Body:**
 ```json
 {
-  "status": "disetujui"
+  "admin_notes": "File pendukung sertifikat UKW wartawan sudah sesuai. Menunggu verifikasi faktual Dewan Pers."
+}
+```
+
+**Response 200:**
+```json
+{
+  "message": "Catatan laporan berhasil diperbarui.",
+  "report": {
+    "id": 1,
+    "report_code": "ON-001",
+    "admin_notes": "File pendukung sertifikat UKW wartawan sudah sesuai. Menunggu verifikasi faktual Dewan Pers.",
+    "status": "proses",
+    ...
+  },
+  "category": "Kategori 2"
 }
 ```
 

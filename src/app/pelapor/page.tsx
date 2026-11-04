@@ -313,7 +313,14 @@ export default function PelaporDashboardPage() {
                       reports.map((item, idx) => (
                         <tr key={idx} className="hover:bg-slate-50 transition-colors">
                           <td className="break-words py-4 font-bold text-slate-700 text-xs">{item.report_code}</td>
-                          <td className="break-words py-4 font-medium text-slate-600 text-xs">{getMediaName(item.answers)}</td>
+                          <td className="break-words py-4 font-medium text-slate-600 text-xs">
+                            <span className="inline-flex items-center gap-2">
+                              {getMediaName(item.answers)}
+                              {item.admin_notes?.trim() && (
+                                <span className="inline-block size-2 rounded-full bg-red-500" title="Ada catatan dari Admin" aria-label="Ada catatan dari Admin" />
+                              )}
+                            </span>
+                          </td>
                           <td className="break-words py-4 text-slate-500 text-xs">{formatDate(item.submitted_at)}</td>
                           <td className="break-words py-4 text-slate-600 text-xs">{item.media_type?.name || '-'}</td>
                           <td className="break-words py-4 text-center font-bold text-slate-700 text-xs">{item.category}</td>

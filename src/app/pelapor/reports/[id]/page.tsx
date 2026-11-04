@@ -12,11 +12,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 const getCookie = (name: string) => name === "token" ? "session" : null;
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const PARTNERSHIP_OFFER_QUESTION = "upload surat penawaran kerjasama";
+const INAPROC_LINK_QUESTION = "link inaproc";
+const SPT_PROOF_QUESTION = "bukti spt";
 
 // Helper menentukan tipe jawaban dari teks pertanyaan
 const determineAnswerType = (questionText: string) => {
   const text = questionText.toLowerCase();
-  if (text.includes("upload") || text.includes("file")) return "file";
+  if (text.includes("upload") || text.includes("file") || text.includes(SPT_PROOF_QUESTION)) return "file";
   if (text.includes("link") || text.includes("url")) return "url";
   return "text";
 };
@@ -58,7 +60,9 @@ const isRequiredQuestion = (question: { id: number; question_text?: string; is_m
     question.is_mandatory ||
     requiredQuestionIds.has(question.id) ||
     questionText.includes("link sosial media") ||
-    questionText.includes(PARTNERSHIP_OFFER_QUESTION)
+    questionText.includes(PARTNERSHIP_OFFER_QUESTION) ||
+    questionText.includes(INAPROC_LINK_QUESTION) ||
+    questionText.includes(SPT_PROOF_QUESTION)
   );
 };
 
@@ -511,6 +515,15 @@ export default function DetailEditLaporanPage() {
           </Badge>
         </Card>
 
+        {reportData.admin_notes?.trim() && (
+          <Card className="mb-8 max-w-4xl rounded-2xl border border-red-100 bg-red-50/50 p-6">
+            <h3 className="text-sm font-bold text-red-700">Catatan dari Admin</h3>
+            <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-700">
+              {reportData.admin_notes}
+            </p>
+          </Card>
+        )}
+
         {/* List Pertanyaan Form */}
         <div className="space-y-6 max-w-4xl">
           {visibleQuestions.map((q, idx) => {
@@ -610,7 +623,9 @@ export default function DetailEditLaporanPage() {
                       value={ansState?.value || ""}
                       disabled={!isEditing}
                       onChange={(e) => handleTextChange(q.id, e.target.value, q.question_text)}
-                      placeholder={isEditing ? "Jawaban anda" : "-"}
+                      placeholder={isEditing
+                        ? (q.question_text.toLowerCase().includes(INAPROC_LINK_QUESTION) ? "Masukkan link inaproc" : "Jawaban anda")
+                        : "-"}
                       className={`w-full py-2 text-xs font-medium bg-transparent transition-colors outline-none
                         ${!isEditing 
                           ? 'border-none text-slate-500 cursor-not-allowed' 
