@@ -360,10 +360,10 @@ export default function DashboardPage() {
   return (
     <div className="flex w-full h-full relative">
       <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-10 pb-8 sm:pb-10 pt-2">
-        <h2 className="text-xl font-bold text-slate-800 mb-6">Selamat Datang, {userName}!</h2>
+        <h2 data-tour="admin-greeting" className="text-xl font-bold text-slate-800 mb-6">Selamat Datang, {userName}!</h2>
 
         {/* Card Widgets */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
+        <div data-tour="admin-summary" className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-10">
           <Card className="flex flex-row items-center gap-5 rounded-2xl border border-slate-100 p-6">
             <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 flex-shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7"><path d="M4.5 6.375a4.125 4.125 0 1 1 8.25 0 4.125 4.125 0 0 1-8.25 0ZM14.25 8.625a3.375 3.375 0 1 1 6.75 0 3.375 3.375 0 0 1-6.75 0ZM1.5 19.125a7.125 7.125 0 0 1 14.25 0v.003l-.001.119a.75.75 0 0 1-.363.63 13.067 13.067 0 0 1-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 0 1-.364-.63l-.001-.122ZM17.25 19.128l-.001.144a2.25 2.25 0 0 1-.233.96 10.088 10.088 0 0 0 5.06-1.01.75.75 0 0 0 .42-.643 4.875 4.875 0 0 0-6.957-4.611 8.586 8.586 0 0 1 1.71 5.157v.003Z" /></svg>
@@ -388,14 +388,15 @@ export default function DashboardPage() {
         </div>
 
         {/* Tabel Laporan */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 lg:p-8">
+        <div data-tour="admin-reports-table" className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 lg:p-8">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h3 className="text-lg font-bold text-slate-800">Daftar laporan media</h3>
               <p className="text-xs text-slate-400 mt-1">Memantau list laporan media dari pelapor</p>
             </div>
             
-            <button 
+            <button
+              data-tour="admin-recap-button"
               onClick={() => setIsRecapModalOpen(true)}
               className="flex items-center gap-2 py-2.5 px-4 rounded-xl bg-[#009b77] hover:bg-[#008263] text-white font-bold text-xs shadow-md shadow-[#009b77]/25 transition-all cursor-pointer shrink-0"
             >
@@ -494,7 +495,7 @@ export default function DashboardPage() {
       </main>
 
       {/* SIDEBAR KANAN (Kalender & Status) */}
-      <aside className="hidden xl:block w-[400px] shrink-0 bg-slate-50 border-l border-slate-200 p-8 sticky top-0 h-[calc(100vh-88px)]">
+      <aside data-tour="admin-status-sidebar" className="hidden xl:block w-[400px] shrink-0 bg-slate-50 border-l border-slate-200 p-8 sticky top-0 h-[calc(100vh-88px)]">
         <Card className="mb-6 rounded-2xl border border-slate-100 p-6">
           <div className="flex items-center justify-between mb-2">
             <h4 className="font-semibold text-sm text-blue-600">Kalender</h4>

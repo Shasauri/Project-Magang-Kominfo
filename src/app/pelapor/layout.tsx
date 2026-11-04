@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { TourGuide } from "@/components/app-tour";
 
 const getStoredToken = () => "session";
 
@@ -89,7 +90,7 @@ export default function PelaporLayout({
         />
       )}
       {/* SIDEBAR KIRI (Dibuat dinamis lebarnya berdasarkan state isSidebarOpen) */}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 flex-col border-r border-slate-100 bg-white transition-all duration-300 lg:relative lg:z-auto ${isSidebarOpen ? "translate-x-0 lg:w-[260px]" : "-translate-x-full lg:translate-x-0 lg:w-0 lg:overflow-hidden"}`}>
+      <aside data-tour="pelapor-sidebar" className={`fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 flex-col border-r border-slate-100 bg-white transition-all duration-300 lg:relative lg:z-auto ${isSidebarOpen ? "translate-x-0 lg:w-[260px]" : "-translate-x-full lg:translate-x-0 lg:w-0 lg:overflow-hidden"}`}>
         <div className="h-24 flex items-center px-8 border-b border-transparent shrink-0 whitespace-nowrap">
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10 flex-shrink-0">
@@ -154,7 +155,7 @@ export default function PelaporLayout({
 
       {/* KONTEN UTAMA */}
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-        <header className="flex h-20 shrink-0 items-center justify-between px-4 sm:h-24 sm:px-6 lg:px-8">
+        <header data-tour="pelapor-topbar" className="flex h-20 shrink-0 items-center justify-between px-4 sm:h-24 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
             {/* TOMBOL TOGGLE DIHUBUNGKAN KE STATE */}
             <Button
@@ -170,13 +171,16 @@ export default function PelaporLayout({
             <h1 className="text-lg font-bold text-blue-600 sm:text-2xl">{getPageTitle()}</h1>
           </div>
           
-          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/80 px-2 py-1.5 sm:gap-3 sm:px-4 sm:py-2">
-            <div className="hidden flex-col text-right sm:flex">
-              <span className="text-xs font-bold text-blue-600">{userName}</span>
-              <span className="text-[10px] text-slate-500 font-medium">Pelapor</span>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
-              {userName.substring(0, 2).toUpperCase()}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <TourGuide role="pelapor" />
+            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100/80 px-2 py-1.5 sm:gap-3 sm:px-4 sm:py-2">
+              <div className="hidden flex-col text-right sm:flex">
+                <span className="text-xs font-bold text-blue-600">{userName}</span>
+                <span className="text-[10px] text-slate-500 font-medium">Pelapor</span>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
+                {userName.substring(0, 2).toUpperCase()}
+              </div>
             </div>
           </div>
         </header>

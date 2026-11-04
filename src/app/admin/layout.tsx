@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { TourGuide } from "@/components/app-tour";
 
 const getStoredToken = () => "session";
 
@@ -91,7 +92,7 @@ export default function AdminLayout({
         />
       )}
       {/* ================= SIDEBAR KIRI ================= */}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 flex-col border-r border-slate-100 bg-white transition-all duration-300 lg:relative lg:z-auto ${isSidebarOpen ? "translate-x-0 lg:w-[260px]" : "-translate-x-full lg:translate-x-0 lg:w-0 lg:overflow-hidden"}`}>
+      <aside data-tour="admin-sidebar" className={`fixed inset-y-0 left-0 z-40 flex w-[260px] shrink-0 flex-col border-r border-slate-100 bg-white transition-all duration-300 lg:relative lg:z-auto ${isSidebarOpen ? "translate-x-0 lg:w-[260px]" : "-translate-x-full lg:translate-x-0 lg:w-0 lg:overflow-hidden"}`}>
         
         {/* Logo Area */}
         <div className="h-24 flex items-center px-8 border-b border-transparent shrink-0">
@@ -179,7 +180,7 @@ export default function AdminLayout({
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         
         {/* Topbar */}
-        <header className="flex h-20 shrink-0 items-center px-4 sm:h-24 sm:px-6 lg:px-8">
+        <header data-tour="admin-topbar" className="flex h-20 shrink-0 items-center px-4 sm:h-24 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -193,6 +194,9 @@ export default function AdminLayout({
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" /></svg>
             </Button>
             <h1 className="text-lg font-bold text-blue-600 sm:text-2xl">{getPageTitle()}</h1>
+          </div>
+          <div className="ml-auto">
+            <TourGuide role="admin" />
           </div>
         </header>
 
