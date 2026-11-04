@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Helper Token
@@ -85,6 +86,7 @@ export default function DetailEditLaporanPage() {
   const [clearedAnswerIds, setClearedAnswerIds] = useState<Set<number>>(new Set());
   const [fileErrors, setFileErrors] = useState<{ [key: number]: string }>({});
   const [loadingFileId, setLoadingFileId] = useState<number | null>(null);
+  const [isRevisionConfirmed, setIsRevisionConfirmed] = useState(false);
 
   // 1. Load Data Laporan & Pertanyaan
   const fetchData = async () => {
@@ -107,6 +109,7 @@ export default function DetailEditLaporanPage() {
       const reportJson = await reportRes.json();
       const report = reportJson.report || reportJson;
       setReportData(report);
+      setIsRevisionConfirmed(report.is_revised === true);
 
       // Fetch daftar pertanyaan berdasarkan media_type_id dari laporan ini
       const qRes = await fetch(`${baseURL}/evaluation-questions/${report.media_type_id}`, {
@@ -137,6 +140,7 @@ export default function DetailEditLaporanPage() {
       }
       setAnswersForm(initialAnswers);
       setClearedAnswerIds(new Set());
+      setIsRevisionConfirmed(reportData.is_revised === true);
 
     } catch (error) {
       console.error("Gagal mengambil data:", error);
@@ -384,10 +388,17 @@ export default function DetailEditLaporanPage() {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ answers: formattedAnswers })
+        body: JSON.stringify({
+          answers: formattedAnswers,
+          is_revised: isRevisionConfirmed,
+        })
       });
 
       if (res.ok) {
+        setReportData((previous: any) => ({
+          ...previous,
+          is_revised: isRevisionConfirmed,
+        }));
         setIsEditing(false);
         setIsSaveSuccessOpen(true);
       } else {
@@ -522,6 +533,19 @@ export default function DetailEditLaporanPage() {
               {reportData.admin_notes}
             </p>
           </Card>
+        )}
+
+        {isEditing && reportData.admin_notes?.trim() && (
+          <label className="mb-8 flex max-w-4xl cursor-pointer items-start gap-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 text-sm text-slate-700">
+            <Checkbox
+              checked={isRevisionConfirmed}
+              onCheckedChange={(checked) => setIsRevisionConfirmed(checked === true)}
+              className="mt-0.5"
+            />
+            <span>
+              Saya menyatakan perubahan yang dilakukan telah sesuai dengan catatan Admin.
+            </span>
+          </label>
         )}
 
         {/* List Pertanyaan Form */}

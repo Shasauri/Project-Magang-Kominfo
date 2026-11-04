@@ -28,6 +28,10 @@ const getMediaName = (answers: any[]) => {
   return mediaAnswer ? mediaAnswer.answer_value : "-";
 };
 
+const isReportVerified = (report: { status?: string }) => report.status === "disetujui";
+const isReportRevised = (report: { is_revised?: boolean; revision_completed?: boolean }) =>
+  report.is_revised === true || report.revision_completed === true;
+
 export default function PelaporDashboardPage() {
   const router = useRouter();
   const [userName, setUserName] = useState("Pelapor");
@@ -316,7 +320,9 @@ export default function PelaporDashboardPage() {
                           <td className="break-words py-4 font-medium text-slate-600 text-xs">
                             <span className="inline-flex items-center gap-2">
                               {getMediaName(item.answers)}
-                              {item.admin_notes?.trim() && (
+                              {item.admin_notes?.trim() &&
+                                !isReportVerified(item) &&
+                                !isReportRevised(item) && (
                                 <span className="inline-block size-2 rounded-full bg-red-500" title="Ada catatan dari Admin" aria-label="Ada catatan dari Admin" />
                               )}
                             </span>

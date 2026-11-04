@@ -910,7 +910,13 @@ Body sama seperti `POST` (semua field opsional).
 >    - Pada soal `Link sosial media`, sediakan opsi pilihan: **"Ya"** dan **"Tidak"**.
 >    - **Jika memilih "Tidak":** Sembunyikan textfield URL dan sembunyikan soal `Jumlah pengikut...`. Kirim `answer_value: "Tidak"` (skor: 0).
 >    - **Jika memilih "Ya":** Tampilkan textfield URL akun sosial media dan tampilkan soal pilihan `Jumlah pengikut...` (`>20.000` / `5.000 - 20.000` / `<5.000`).
-> 4. Hanya `answers` yang dikirim yang akan diperbarui. Jawaban lain tetap seperti sebelumnya.
+> 4. **Checkbox Penanda Selesai Revisi (`is_revised`):**
+>    - **Kapan ditampilkan di Frontend:** Hanya muncul jika laporan memiliki catatan dari admin (`report.admin_notes !== null && report.admin_notes !== ""`).
+>    - **Sifat Checkbox:** **Tidak wajib** (opsional). Pelapor dapat mencicil perbaikan file/link di lain hari dan tetap bisa menyimpan perubahan tanpa mencentang checkbox (`is_revised: false`).
+>    - **Fungsi:** Sebagai sinyal/penanda dari pelapor ke admin bahwa seluruh catatan/revisi dokumen sudah selesai diperbaiki.
+>    - **Payload saat submit/update:** Kirim `"is_revised": true` (atau alias `"revision_completed": true`).
+>    - **Efek di Admin:** Admin dapat melihat indikator badge pada daftar/detail laporan bahwa laporan tersebut telah selesai direvisi pelapor (sehingga menghemat kuota email karena admin dan pelapor tidak perlu saling kirim email konfirmasi bolak-balik).
+> 5. Hanya `answers` yang dikirim yang akan diperbarui. Jawaban lain tetap seperti sebelumnya.
 
 ---
 
@@ -1375,6 +1381,9 @@ Digunakan jika admin ingin menambah atau mengubah catatan masukan ke pelapor tan
   "category": "Kategori 2"
 }
 ```
+
+> **Notifikasi Email Catatan:**
+> Setiap kali admin mengirimkan atau memperbarui catatan masukan untuk pelapor, sistem otomatis mengirimkan email pemberitahuan ke email pelapor dengan subjek **`Catatan Baru dari Admin untuk Laporan {KODE_LAPORAN}`** yang memuat isi pesan catatan dari admin secara lengkap.
 
 #### Export PDF Single Laporan
 ```

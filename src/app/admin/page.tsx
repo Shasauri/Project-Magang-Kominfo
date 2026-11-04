@@ -30,6 +30,18 @@ const getCookie = (name: string) => name === "token" ? "session" : null;
 
 const getStoredToken = () => "session";
 
+const getAdminNoteIndicator = (report: {
+  status?: string;
+  admin_notes?: string | null;
+  is_revised?: boolean;
+  revision_completed?: boolean;
+}) => {
+  if (report.status === "disetujui" || !report.admin_notes?.trim()) return null;
+  return report.is_revised === true || report.revision_completed === true
+    ? "revised"
+    : "needs-revision";
+};
+
 const fetchAllReports = async (baseUrl: string, headers: HeadersInit) => {
   const allReports: Record<string, unknown>[] = [];
   let page = 1;
@@ -425,7 +437,25 @@ export default function DashboardPage() {
                   reports.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50 transition-colors">
                       <td className="break-words py-4 font-medium text-slate-700">{item.report_code}</td>
-                      <td className="break-words py-4 text-slate-600">{item.media_name}</td>
+                      <td className="break-words py-4 text-slate-600">
+                        <span className="inline-flex items-center gap-2">
+                          {item.media_name}
+                          {getAdminNoteIndicator(item) === "needs-revision" && (
+                            <span
+                              className="inline-block size-2 rounded-full bg-yellow-400"
+                              title="Menunggu revisi dari Pelapor"
+                              aria-label="Menunggu revisi dari Pelapor"
+                            />
+                          )}
+                          {getAdminNoteIndicator(item) === "revised" && (
+                            <span
+                              className="inline-block size-2 rounded-full bg-green-500"
+                              title="Revisi telah dikonfirmasi Pelapor"
+                              aria-label="Revisi telah dikonfirmasi Pelapor"
+                            />
+                          )}
+                        </span>
+                      </td>
                       <td className="break-words py-4 text-slate-500">{item.submitted_at ? item.submitted_at.substring(0, 10) : '-'}</td>
                       <td className="break-words py-4 text-slate-600">{item.media_type}</td>
                       <td className="break-words py-4 text-center text-slate-600">{item.category}</td>
