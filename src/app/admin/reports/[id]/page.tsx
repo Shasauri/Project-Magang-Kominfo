@@ -32,6 +32,8 @@ export default function DetailLaporanAdminPage() {
   const [reportData, setReportData] = useState<any>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [notesNotification, setNotesNotification] = useState<"success" | "error" | null>(null);
+  const [notesErrorMessage, setNotesErrorMessage] = useState("");
   
   // State untuk Preview PDF
   const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
@@ -107,6 +109,8 @@ export default function DetailLaporanAdminPage() {
 
   const handleSaveNotes = async () => {
     setIsSavingNotes(true);
+    setNotesNotification(null);
+    setNotesErrorMessage("");
 
     try {
       const res = await fetch(`/api/backend/admin/reports/${id}/notes`, {
@@ -129,10 +133,11 @@ export default function DetailLaporanAdminPage() {
         ...(data.report || {}),
         admin_notes: adminNotes,
       }));
-      alert("Catatan berhasil disimpan.");
+      setNotesNotification("success");
     } catch (error: unknown) {
       console.error("Gagal menyimpan catatan:", error);
-      alert(error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan catatan.");
+      setNotesErrorMessage(error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan catatan.");
+      setNotesNotification("error");
     } finally {
       setIsSavingNotes(false);
     }
@@ -358,6 +363,45 @@ export default function DetailLaporanAdminPage() {
           </div>
         </Card>
       </aside>
+
+      {notesNotification && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/30 p-4">
+          <div className="flex min-h-[220px] w-full max-w-sm flex-col items-center justify-center rounded-2xl bg-white px-8 py-7 text-center shadow-xl">
+            {notesNotification === "error" ? (
+              <>
+                <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-red-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-7 w-7">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-1.5a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 16.5h.008v.008H12V16.5Z" />
+                  </svg>
+                </div>
+                <p className="max-w-[240px] text-sm font-bold leading-snug text-slate-900">
+                  {notesErrorMessage}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="mb-6 flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-blue-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-6 w-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m5 12 4 4L19 6" />
+                  </svg>
+                </div>
+                <p className="text-sm font-bold text-slate-900">Catatan berhasil disimpan</p>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={() => setNotesNotification(null)}
+              className={`mt-7 rounded-lg px-7 py-2.5 text-xs font-semibold text-white transition-colors ${
+                notesNotification === "error"
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              Kembali
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ================= MODAL PREVIEW PDF ================= */}
       {selectedPdfUrl && (
