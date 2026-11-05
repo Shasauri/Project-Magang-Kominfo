@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { ReportHints } from "@/components/report-hints";
 
 // Helper untuk mengambil token
 const getCookie = (name: string) => name === "token" ? "session" : null;
@@ -57,6 +58,21 @@ export default function PelaporDashboardPage() {
 
   // State Daftar Laporan
   const [reports, setReports] = useState<any[]>([]);
+
+  const reportHints = useMemo(
+    () =>
+      reports.flatMap((item) =>
+        item.admin_notes?.trim() && !isReportVerified(item) && !isReportRevised(item)
+          ? [{ reportId: String(item.id), kind: "note" as const }]
+          : []
+      ),
+    [reports]
+  );
+
+  const hintIds = useMemo(
+    () => new Set(reportHints.map((hint) => hint.reportId)),
+    [reportHints]
+  );
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -320,10 +336,8 @@ export default function PelaporDashboardPage() {
                           <td className="break-words py-4 font-medium text-slate-600 text-xs">
                             <span className="inline-flex items-center gap-2">
                               {getMediaName(item.answers)}
-                              {item.admin_notes?.trim() &&
-                                !isReportVerified(item) &&
-                                !isReportRevised(item) && (
-                                <span className="inline-block size-2 rounded-full bg-red-500" title="Ada catatan dari Admin" aria-label="Ada catatan dari Admin" />
+                              {hintIds.has(String(item.id)) && (
+                                <span className="inline-block size-2" aria-hidden="true" data-report-hint={item.id} />
                               )}
                             </span>
                           </td>
@@ -357,7 +371,9 @@ export default function PelaporDashboardPage() {
                 </table>
               </div>
             </div>
-            
+
+            {!isAddReportModalOpen && <ReportHints items={reportHints} />}
+
           </div>
         )}
       </main>

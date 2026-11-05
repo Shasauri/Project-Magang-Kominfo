@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { DayPicker } from "react-day-picker";
+import { ReportHints } from "@/components/report-hints";
 import "react-day-picker/dist/style.css";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -35,7 +36,7 @@ const getAdminNoteIndicator = (report: {
   admin_notes?: string | null;
   is_revised?: boolean;
   revision_completed?: boolean;
-}) => {
+}): "revised" | "needs-revision" | null => {
   if (report.status === "disetujui" || !report.admin_notes?.trim()) return null;
   return report.is_revised === true || report.revision_completed === true
     ? "revised"
@@ -86,6 +87,20 @@ export default function DashboardPage() {
   const [reports, setReports] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [reportsError, setReportsError] = useState("");
+
+  const reportHints = useMemo(
+    () =>
+      reports.flatMap((item) => {
+        const kind = getAdminNoteIndicator(item);
+        return kind ? [{ reportId: String(item.id), kind }] : [];
+      }),
+    [reports]
+  );
+
+  const hintIds = useMemo(
+    () => new Set(reportHints.map((hint) => hint.reportId)),
+    [reportHints]
+  );
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -441,19 +456,8 @@ export default function DashboardPage() {
                       <td className="break-words py-4 text-slate-600">
                         <span className="inline-flex items-center gap-2">
                           {item.media_name}
-                          {getAdminNoteIndicator(item) === "needs-revision" && (
-                            <span
-                              className="inline-block size-2 rounded-full bg-yellow-400"
-                              title="Menunggu revisi dari Pelapor"
-                              aria-label="Menunggu revisi dari Pelapor"
-                            />
-                          )}
-                          {getAdminNoteIndicator(item) === "revised" && (
-                            <span
-                              className="inline-block size-2 rounded-full bg-green-500"
-                              title="Revisi telah dikonfirmasi Pelapor"
-                              aria-label="Revisi telah dikonfirmasi Pelapor"
-                            />
+                          {hintIds.has(String(item.id)) && (
+                            <span className="inline-block size-2" aria-hidden="true" data-report-hint={item.id} />
                           )}
                         </span>
                       </td>
@@ -492,6 +496,10 @@ export default function DashboardPage() {
             </table>
           </div>
         </div>
+
+        {!isPrintModalOpen && !isRecapModalOpen && (
+          <ReportHints items={reportHints} />
+        )}
       </main>
 
       {/* SIDEBAR KANAN (Kalender & Status) */}

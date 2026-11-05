@@ -185,3 +185,20 @@
 .driver-popover.sifokam-tour .driver-popover-close-btn {
   color: #94a3b8;
 }
+
+/* Feature hints untuk status catatan */
+.report-hint .driver-hint-dot {
+  inset: 33.34%; /* titik terlihat 8px di dalam target klik 24px */
+}
+
+.report-hint--note {
+  --driver-hint-color: #ef4444;
+}
+
+.report-hint--needs-revision {
+  --driver-hint-color: #facc15;
+}
+
+.report-hint--revised {
+  --driver-hint-color: #22c55e;
+}
