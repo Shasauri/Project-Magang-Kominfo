@@ -389,7 +389,11 @@ function TambahLaporanContent() {
   };
 
   const isFileQuestionLocked = (question: { id: number; question_text?: string }) => {
-    if (question.question_text?.toLowerCase().includes(PARTNERSHIP_OFFER_QUESTION)) {
+    const questionText = question.question_text?.toLowerCase() || "";
+    if (
+      questionText.includes(PARTNERSHIP_OFFER_QUESTION) ||
+      questionText.includes(SPT_PROOF_QUESTION)
+    ) {
       return false;
     }
 

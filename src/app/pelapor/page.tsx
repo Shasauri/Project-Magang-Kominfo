@@ -274,8 +274,7 @@ export default function PelaporDashboardPage() {
             <div data-tour="pelapor-reports-table" className="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 sm:p-6 lg:p-8 mt-4">
               <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-800">Daftar laporan media</h3>
-                  <p className="text-xs text-slate-400 mt-1">Memantau list laporan media dari pelapor</p>
+                  <h3 className="text-lg font-bold text-slate-800">Daftar Pengajuan Kerjasama</h3>
                 </div>
                 <button
                   type="button"
