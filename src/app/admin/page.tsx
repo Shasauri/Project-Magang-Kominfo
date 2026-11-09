@@ -43,13 +43,78 @@ const getAdminNoteIndicator = (report: {
     : "needs-revision";
 };
 
-const fetchAllReports = async (baseUrl: string, headers: HeadersInit) => {
+type AdvancedFilters = {
+  date_from: string;
+  date_to: string;
+  score_min: string;
+  score_max: string;
+  sort_by: string;
+  sort_dir: string;
+};
+
+const DEFAULT_ADVANCED: AdvancedFilters = {
+  date_from: "",
+  date_to: "",
+  score_min: "",
+  score_max: "",
+  sort_by: "created_at",
+  sort_dir: "desc",
+};
+
+const buildReportParams = (
+  search: string,
+  status: string,
+  mediaTypeId: string,
+  adv: AdvancedFilters
+) => {
+  const params: Record<string, string> = {
+    sort_by: adv.sort_by,
+    sort_dir: adv.sort_dir,
+    per_page: "100",
+  };
+  if (search.trim()) params.search = search.trim();
+  if (status) params.status = status;
+  if (mediaTypeId) params.media_type_id = mediaTypeId;
+  if (adv.date_from) params.date_from = adv.date_from;
+  if (adv.date_to) params.date_to = adv.date_to;
+  if (adv.score_min) params.score_min = adv.score_min;
+  if (adv.score_max) params.score_max = adv.score_max;
+  return params;
+};
+
+const normalizeAdvanced = (filters: AdvancedFilters): AdvancedFilters => {
+  const next = { ...filters };
+  if (next.date_from && next.date_to && next.date_from > next.date_to) {
+    [next.date_from, next.date_to] = [next.date_to, next.date_from];
+  }
+  if (next.score_min && (!Number.isFinite(Number(next.score_min)) || Number(next.score_min) < 0)) {
+    next.score_min = "";
+  }
+  if (next.score_max && (!Number.isFinite(Number(next.score_max)) || Number(next.score_max) < 0)) {
+    next.score_max = "";
+  }
+  if (next.score_min && next.score_max && Number(next.score_min) > Number(next.score_max)) {
+    [next.score_min, next.score_max] = [next.score_max, next.score_min];
+  }
+  return next;
+};
+
+const fetchAllReports = async (
+  baseUrl: string,
+  headers: HeadersInit,
+  params: Record<string, string>,
+  signal: AbortSignal
+) => {
   const allReports: Record<string, unknown>[] = [];
   let page = 1;
 
   while (true) {
-    const response = await fetch(`${baseUrl}/admin/reports?page=${page}`, { headers });
+    const query = new URLSearchParams({ ...params, page: String(page) });
+    const response = await fetch(`${baseUrl}/admin/reports?${query}`, { headers, signal });
+    // Abort during body read is swallowed by .catch below, so check explicitly.
+    if (signal.aborted) throw new DOMException("Aborted", "AbortError");
     const responseData = await response.json().catch(() => null);
+    if (signal.aborted) throw new DOMException("Aborted", "AbortError");
 
     if (!response.ok) {
       const error = new Error(
@@ -60,9 +125,11 @@ const fetchAllReports = async (baseUrl: string, headers: HeadersInit) => {
       throw error;
     }
 
-    const pageReports = Array.isArray(responseData)
-      ? responseData
-      : responseData?.data || [];
+    if (Array.isArray(responseData)) {
+      return [...allReports, ...responseData];
+    }
+
+    const pageReports = responseData?.data || [];
     allReports.push(...pageReports);
 
     if (
@@ -105,6 +172,17 @@ export default function DashboardPage() {
   
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // ---------- STATE FILTER LAPORAN ----------
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [mediaTypeFilter, setMediaTypeFilter] = useState("");
+  const [advancedFilters, setAdvancedFilters] =
+    useState<AdvancedFilters>(DEFAULT_ADVANCED);
+  const [draftFilters, setDraftFilters] =
+    useState<AdvancedFilters>(DEFAULT_ADVANCED);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   // ---------- STATE UNTUK MODAL CETAK & UBAH STATUS ----------
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [selectedReportId, setSelectedReportId] = useState<number | null>(null);
@@ -124,13 +202,14 @@ export default function DashboardPage() {
   const [isExportingExcel, setIsExportingExcel] = useState(false);
 
   useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     const fetchData = async () => {
       const token = getStoredToken();
-      if (!token) {
-        setReportsError("Sesi login tidak ditemukan. Silakan login kembali.");
-        setIsLoading(false);
-        return;
-      }
+      if (!token) return;
 
       const headers = {
         "Content-Type": "application/json",
@@ -151,40 +230,76 @@ export default function DashboardPage() {
         if (dashRes.ok) {
           setDashboardData(await dashRes.json());
         }
-
-        try {
-          const reportsData = await fetchAllReports(
-            "/api/backend",
-            headers
-          );
-          setReports(reportsData);
-          setReportsError("");
-        } catch (error) {
-          const reportError = error as Error & {
-            status?: number;
-            responseData?: unknown;
-          };
-          setReportsError(reportError.message);
-          console.error(
-            "Gagal mengambil laporan admin:",
-            reportError.status,
-            reportError.responseData
-          );
-        }
         if (mediaRes.ok) {
           const mediaData = await mediaRes.json();
           setMediaTypes(mediaData || []);
         }
       } catch (error) {
         console.error("Gagal mengambil data API", error);
-        setReportsError("Tidak dapat terhubung ke server. Periksa koneksi dan API.");
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchData();
   }, [refreshTrigger]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchReports = async () => {
+      setIsLoading(true);
+      setReportsError("");
+
+      const token = getStoredToken();
+      if (!token) {
+        setReportsError("Sesi login tidak ditemukan. Silakan login kembali.");
+        setIsLoading(false);
+        return;
+      }
+
+      const headers = {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      };
+
+      try {
+        const reportsData = await fetchAllReports(
+          "/api/backend",
+          headers,
+          buildReportParams(
+            debouncedSearch,
+            statusFilter,
+            mediaTypeFilter,
+            advancedFilters
+          ),
+          controller.signal
+        );
+        setReports(reportsData);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        const reportError = error as Error & {
+          status?: number;
+          responseData?: unknown;
+        };
+        setReportsError(reportError.message);
+        console.error(
+          "Gagal mengambil laporan admin:",
+          reportError.status,
+          reportError.responseData
+        );
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false);
+      }
+    };
+
+    fetchReports();
+    return () => controller.abort();
+  }, [
+    refreshTrigger,
+    debouncedSearch,
+    statusFilter,
+    mediaTypeFilter,
+    advancedFilters,
+  ]);
 
   const openPrintModal = async (reportId: number) => {
     setIsPrintModalOpen(true);
@@ -358,6 +473,42 @@ export default function DashboardPage() {
     }
   };
 
+  const openFilterDialog = () => {
+    setDraftFilters(advancedFilters);
+    setIsFilterOpen(true);
+  };
+
+  const applyFilters = () => {
+    setAdvancedFilters(normalizeAdvanced(draftFilters));
+    setIsFilterOpen(false);
+  };
+
+  const resetFilters = () => {
+    // Set debouncedSearch directly so the old search does not linger 500ms.
+    setSearchTerm("");
+    setDebouncedSearch("");
+    setStatusFilter("");
+    setMediaTypeFilter("");
+    setAdvancedFilters(DEFAULT_ADVANCED);
+    setDraftFilters(DEFAULT_ADVANCED);
+    setIsFilterOpen(false);
+  };
+
+  const advancedFilterCount =
+    [
+      advancedFilters.date_from,
+      advancedFilters.date_to,
+      advancedFilters.score_min,
+      advancedFilters.score_max,
+    ].filter(Boolean).length +
+    (advancedFilters.sort_by !== DEFAULT_ADVANCED.sort_by ||
+    advancedFilters.sort_dir !== DEFAULT_ADVANCED.sort_dir
+      ? 1
+      : 0);
+  const hasActiveFilters = Boolean(
+    debouncedSearch || statusFilter || mediaTypeFilter || advancedFilterCount
+  );
+
   let modalMediaName = "-";
   let modalFiles: any[] = [];
   let modalLinks: any[] = [];
@@ -404,20 +555,79 @@ export default function DashboardPage() {
 
         {/* Tabel Laporan */}
         <div data-tour="admin-reports-table" className="bg-white rounded-2xl shadow-sm border border-slate-100 p-4 sm:p-6 lg:p-8">
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-6 flex flex-col gap-4">
             <div>
               <h3 className="text-lg font-bold text-slate-800">Daftar laporan media</h3>
               <p className="text-xs text-slate-400 mt-1">Memantau list laporan media dari pelapor</p>
             </div>
-            
-            <button
-              data-tour="admin-recap-button"
-              onClick={() => setIsRecapModalOpen(true)}
-              className="flex items-center gap-2 py-2.5 px-4 rounded-xl bg-[#009b77] hover:bg-[#008263] text-white font-bold text-xs shadow-md shadow-[#009b77]/25 transition-all cursor-pointer shrink-0"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" /></svg>
-              Cetak Rekap Proposal
-            </button>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+              <div className="relative w-full sm:w-56">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                </div>
+                <Input
+                  type="text"
+                  aria-label="Cari laporan"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Cari nama/email/kode laporan..."
+                  className="h-10 rounded-xl bg-slate-50/50 py-2 pl-11 pr-4 text-sm"
+                />
+              </div>
+
+              <div className="relative w-full sm:w-40 sm:shrink-0">
+                <select
+                  aria-label="Filter status"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="block h-10 w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Semua Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="proses">Di Proses</option>
+                  <option value="disetujui">Di Verifikasi</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                </div>
+              </div>
+
+              <div className="relative w-full sm:w-40 sm:shrink-0">
+                <select
+                  aria-label="Filter tipe media"
+                  value={mediaTypeFilter}
+                  onChange={(e) => setMediaTypeFilter(e.target.value)}
+                  className="block h-10 w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Semua Tipe Media</option>
+                  {mediaTypes.map((type) => (
+                    <option key={type.id} value={type.id}>{type.name}</option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={openFilterDialog}
+                className="h-10 rounded-xl px-4 text-xs font-semibold"
+              >
+                Filter{advancedFilterCount ? ` (${advancedFilterCount})` : ""}
+              </Button>
+
+              <button
+                data-tour="admin-recap-button"
+                onClick={() => setIsRecapModalOpen(true)}
+                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#009b77] hover:bg-[#008263] text-white font-bold text-xs shadow-md shadow-[#009b77]/25 transition-all cursor-pointer shrink-0"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" /></svg>
+                Cetak Rekap Proposal
+              </button>
+            </div>
           </div>
 
           <div className="min-w-0 overflow-x-auto">
@@ -448,7 +658,7 @@ export default function DashboardPage() {
                 {isLoading ? (
                   <tr><td colSpan={8} className="py-8 text-center text-slate-400">Memuat data...</td></tr>
                 ) : reports.length === 0 ? (
-                  <tr><td colSpan={8} className="py-8 text-center text-slate-400">{reportsError || "Belum ada laporan."}</td></tr>
+                  <tr><td colSpan={8} className="py-8 text-center text-slate-400">{reportsError || (hasActiveFilters ? "Tidak ada laporan yang cocok dengan filter." : "Belum ada laporan.")}</td></tr>
                 ) : (
                   reports.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50 transition-colors">
@@ -794,6 +1004,111 @@ export default function DashboardPage() {
               </button>
             </div>
 
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* ================= MODAL FILTER LANJUTAN ================= */}
+      {isFilterOpen && (
+        <Dialog open={isFilterOpen} onOpenChange={(open) => !open && setIsFilterOpen(false)}>
+          <DialogContent className="max-w-md rounded-3xl p-4 sm:p-8">
+            <DialogHeader>
+              <DialogTitle className="text-lg font-bold text-slate-900">Filter Laporan</DialogTitle>
+              <DialogDescription className="text-xs">
+                Saring laporan berdasarkan tanggal, skor, dan urutan.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="filter-date-from">Dari tanggal</Label>
+                <Input
+                  id="filter-date-from"
+                  type="date"
+                  value={draftFilters.date_from}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, date_from: e.target.value }))}
+                  className="h-10 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="filter-date-to">Sampai tanggal</Label>
+                <Input
+                  id="filter-date-to"
+                  type="date"
+                  value={draftFilters.date_to}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, date_to: e.target.value }))}
+                  className="h-10 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="filter-score-min">Skor min</Label>
+                <Input
+                  id="filter-score-min"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={draftFilters.score_min}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, score_min: e.target.value }))}
+                  className="h-10 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="filter-score-max">Skor max</Label>
+                <Input
+                  id="filter-score-max"
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={draftFilters.score_max}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, score_max: e.target.value }))}
+                  className="h-10 rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="filter-sort-by">Urutkan berdasarkan</Label>
+                <select
+                  id="filter-sort-by"
+                  value={draftFilters.sort_by}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, sort_by: e.target.value }))}
+                  className="block h-10 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="created_at">Tanggal Submit</option>
+                  <option value="total_score">Total Skor</option>
+                  <option value="status">Status</option>
+                  <option value="report_code">Kode Laporan</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="filter-sort-dir">Arah urutan</Label>
+                <select
+                  id="filter-sort-dir"
+                  value={draftFilters.sort_dir}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, sort_dir: e.target.value }))}
+                  className="block h-10 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="desc">Turun</option>
+                  <option value="asc">Naik</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 w-full">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={resetFilters}
+                className="flex-1 h-10 rounded-xl text-sm font-semibold"
+              >
+                Reset
+              </Button>
+              <Button
+                type="button"
+                onClick={applyFilters}
+                className="flex-1 h-10 rounded-xl text-sm font-semibold"
+              >
+                Terapkan
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}
