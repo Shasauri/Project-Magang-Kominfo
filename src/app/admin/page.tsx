@@ -767,7 +767,7 @@ export default function DashboardPage() {
       {/* ================= MODAL CETAK & UBAH STATUS (AUTO-SAVE) ================= */}
       {isPrintModalOpen && (
         <Dialog open={isPrintModalOpen} onOpenChange={(open) => !open && closePrintModal()}>
-          <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-4xl overflow-hidden rounded-2xl bg-white p-0 shadow-xl sm:max-h-[calc(100dvh-4rem)]">
+          <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-hidden rounded-2xl bg-white p-0 shadow-xl sm:max-h-[calc(100dvh-4rem)] sm:max-w-7xl">
             
             {/* Header Modal */}
             <div className="flex flex-col gap-4 border-b border-slate-100 p-4 pb-5 sm:flex-row sm:items-center sm:justify-between sm:p-8 sm:pb-6">
