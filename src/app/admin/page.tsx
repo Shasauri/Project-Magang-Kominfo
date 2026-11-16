@@ -824,10 +824,11 @@ export default function DashboardPage() {
                               key={file.id}
                               onClick={() => handleDownloadPdf(qId)}
                               disabled={isDownloading}
+                              title={file.question?.question_text}
                               className="h-10 justify-between rounded-md border-slate-200 bg-slate-50 px-3 text-left text-xs font-medium text-slate-700 hover:border-blue-300 hover:bg-blue-50"
                             >
                               <span className="truncate pr-2">
-                                {isDownloading ? "Mengunduh..." : `File Bukti ${i + 1}`}
+                                {isDownloading ? "Mengunduh..." : `File Bukti ${file.question?.question_text || i + 1}`}
                               </span>
                               <Download className={isDownloading ? "animate-bounce text-blue-600" : "text-slate-400"} />
                             </Button>

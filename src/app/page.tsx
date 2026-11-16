@@ -33,8 +33,8 @@ export default function LandingPage() {
               />
             </div>
             <div>
-              <h1 className="text-sm font-black text-slate-900 leading-none tracking-tight">SIFOKAM</h1>
-              <p className="text-[6px] text-slate-500 font-bold leading-tight uppercase">Sistem Form<br/>Kategori Media</p>
+              <h1 className="text-sm font-black text-slate-900 leading-none tracking-tight">SIMPLE</h1>
+              <p className="text-[6px] text-slate-500 font-bold leading-tight uppercase">Sistem Informasi<br/>Pendaftaran dan Penilaian Kelayakan Media</p>
             </div>
           </Link>
 
@@ -72,7 +72,7 @@ export default function LandingPage() {
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-white leading-[1.1] tracking-tight mb-6">
-              Sistem Informasi Form Kategori Media
+              Sistem Informasi Pendaftaran dan Penilaian Kelayakan Media
             </h1>
             
             <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-10 max-w-2xl">
@@ -151,12 +151,12 @@ export default function LandingPage() {
 
             {/* Kanan: Teks */}
             <div className="w-full lg:w-1/2">
-              <span className="text-[11px] font-bold text-blue-600 tracking-widest uppercase block mb-3">Tentang SIFOKAM</span>
+              <span className="text-[11px] font-bold text-blue-600 tracking-widest uppercase block mb-3">Tentang SIMPLE</span>
               <h2 className="text-3xl font-bold text-slate-900 mb-6 leading-tight">Komitmen Pengelolaan Informasi Publik yang Transparan</h2>
               
               <div className="space-y-4 text-sm text-slate-500 leading-relaxed mb-8">
                 <p>
-                  SIFOKAM adalah sistem informasi inovatif yang dikembangkan oleh <strong>Dinas Komunikasi, Informatika, Statistik dan Persandian Pemerintah Kabupaten Banjar</strong>. Sistem ini dibuat untuk mempermudah institusi dalam mendaftarkan dan mengklasifikasikan kategori media penyebar digital yang kredibel.
+                  SIMPLE adalah sistem informasi inovatif yang dikembangkan oleh <strong>Dinas Komunikasi, Informatika, Statistik dan Persandian Pemerintah Kabupaten Banjar</strong>. Sistem ini dibuat untuk mempermudah institusi dalam mendaftarkan dan mengklasifikasikan kategori media penyebar digital yang kredibel.
                 </p>
                 <p>
                   Misi kami adalah mewujudkan transparansi data publikasi, memotong rantai birokrasi administratif yang lambat, serta memberikan jaminan efisiensi pelaporan harian di lapangan secara tepat waktu demi kemajuan daerah.
@@ -224,7 +224,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12">
             <span className="text-[11px] font-bold text-blue-600 tracking-widest uppercase block mb-3">Gerbang Layanan</span>
-            <h2 className="text-3xl font-bold text-slate-900 mb-3">Akses Akun SIFOKAM Anda</h2>
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">Akses Akun SIMPLE Anda</h2>
             <p className="text-sm text-slate-500">Pilih jenis portal layanan yang sesuai dengan status keanggotaan Anda saat ini.</p>
           </div>
 
@@ -248,7 +248,7 @@ export default function LandingPage() {
               <span className="inline-block px-3 py-1 rounded-md bg-blue-900/50 text-blue-300 text-[9px] font-black tracking-wider mb-6">NEW REGISTRATION</span>
               <h3 className="text-2xl font-bold text-white mb-4 relative z-10">Daftar Akun Baru</h3>
               <p className="text-sm text-slate-400 leading-relaxed mb-6 relative z-10">
-                Belum terdaftar di SIFOKAM? Daftarkan instansi Anda untuk mulai membuat laporan media resmi daerah dalam hitungan detik.
+                Belum terdaftar di SIMPLE? Daftarkan instansi Anda untuk mulai membuat laporan media resmi daerah dalam hitungan detik.
               </p>
               <ul className="text-xs text-slate-300 space-y-2 mb-8 relative z-10">
                 <li className="flex items-center gap-2">
@@ -281,11 +281,11 @@ export default function LandingPage() {
                   />
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-white leading-none tracking-tight">SIFOKAM</h4>
+                  <h4 className="text-sm font-black text-white leading-none tracking-tight">SIMPLE</h4>
                 </div>
               </div>
               <p className="text-xs leading-relaxed max-w-xs">
-                Sistem Informasi Form Kategori Media merupakan inovasi digital pengelolaan data dan pelaporan media di lingkungan Pemerintah Kabupaten Banjar.
+                Sistem Informasi Pendaftaran dan Penilaian Kelayakan Media merupakan inovasi digital pengelolaan data dan pelaporan media di lingkungan Pemerintah Kabupaten Banjar.
               </p>
             </div>
 
@@ -313,7 +313,7 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px]">
-            <p>© 2026 SIFOKAM. All rights reserved.</p>
+            <p>© 2026 SIMPLE. All rights reserved.</p>
             <p>Dibuat untuk Transparansi Media Institusi.</p>
           </div>
         </div>
