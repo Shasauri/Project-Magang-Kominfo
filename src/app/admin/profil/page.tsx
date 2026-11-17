@@ -316,7 +316,7 @@ export default function ProfilPage() {
         <div className="bg-white rounded-3xl p-4 sm:p-6 lg:p-8 shadow-sm border border-slate-100">
           <div className="mb-6">
             <h3 className="text-lg font-bold text-slate-800">Informasi Pribadi</h3>
-            <p className="text-xs text-slate-500 mt-1">Kelola data diri dasar untuk akun SIFOKAM Anda.</p>
+            <p className="text-xs text-slate-500 mt-1">Kelola data diri dasar untuk akun SIMPLE Anda.</p>
           </div>
 
           <form onSubmit={handleUpdateProfile}>

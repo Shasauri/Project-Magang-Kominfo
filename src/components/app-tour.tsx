@@ -76,7 +76,7 @@ export function TourGuide({ role }: { role: TourRole }) {
         overlayOpacity: 0.55,
         stagePadding: 8,
         stageRadius: 12,
-        popoverClass: "sifokam-tour",
+        popoverClass: "simple-tour",
         onDestroyed: () => {
           driverRef.current = null;
         },

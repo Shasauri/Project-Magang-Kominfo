@@ -76,7 +76,7 @@ export default function PelaporLayout({
     if (pathname === "/pelapor") return "Dashboard";
     if (pathname.includes("/pelapor/profil")) return "Profil Akun";
     if (pathname.includes("/pelapor/tambah-laporan")) return "Tambah Proposal";
-    return "Sistem SIFOKAM";
+    return "Sistem SIMPLE";
   };
 
   return (
@@ -94,12 +94,12 @@ export default function PelaporLayout({
         <div className="h-24 flex items-center px-8 border-b border-transparent shrink-0 whitespace-nowrap">
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10 flex-shrink-0">
-              <Image src="/images/Logo.png" alt="Logo SIFOKAM" fill className="object-contain" priority />
+              <Image src="/images/Logo.png" alt="Logo SIMPLE" fill className="object-contain" priority />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-slate-800 leading-tight tracking-wide">SIFOKAM</h1>
+              <h1 className="text-sm font-bold text-slate-800 leading-tight tracking-wide">SIMPLE</h1>
               <p className="text-[8px] text-slate-500 uppercase font-semibold leading-tight mt-0.5">
-                Sistem Form<br/>Kategori Media<br/>KOMDIGI
+                Sistem Informasi<br/>Pendaftaran dan Penilaian<br/>Kelayakan Media
               </p>
             </div>
           </div>

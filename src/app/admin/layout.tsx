@@ -78,7 +78,7 @@ export default function AdminLayout({
     if (pathname.includes("/admin/pengguna")) return "Daftar Pengguna";
     if (pathname.includes("/admin/profil")) return "Profil Akun";
     if (pathname.includes("/admin/reports")) return "Laporan Pengisian Form";
-    return "Sistem SIFOKAM";
+    return "Sistem SIMPLE";
   };
 
   return (
@@ -98,12 +98,12 @@ export default function AdminLayout({
         <div className="h-24 flex items-center px-8 border-b border-transparent shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative w-10 h-10 flex-shrink-0">
-              <Image src="/images/Logo.png" alt="Logo SIFOKAM" fill className="object-contain" priority />
+              <Image src="/images/Logo.png" alt="Logo SIMPLE" fill className="object-contain" priority />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-slate-800 leading-tight tracking-wide">SIFOKAM</h1>
+              <h1 className="text-sm font-bold text-slate-800 leading-tight tracking-wide">SIMPLE</h1>
               <p className="text-[8px] text-slate-500 uppercase font-semibold leading-tight mt-0.5">
-                Sistem Form<br/>Kategori Media<br/>KOMDIGI
+                Sistem Informasi<br/>Pendaftaran dan Penilaian<br/>Kelayakan Media
               </p>
             </div>
           </div>

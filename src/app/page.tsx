@@ -142,7 +142,7 @@ export default function LandingPage() {
             <div className="relative h-[400px] w-full overflow-hidden rounded-3xl bg-slate-100 lg:w-1/2">
               <Image
                 src="/images/BG-image.png"
-                alt="Ilustrasi layanan SIFOKAM"
+                alt="Ilustrasi layanan SIMPLE"
                 fill
                 className="object-cover"
               />

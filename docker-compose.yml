@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: sifokam-frontend
+    container_name: simple-frontend
     ports:
       - "3000:3000"
     environment:

@@ -1,6 +1,6 @@
-# 📰 SIFOKAM Frontend — Sistem Informasi Laporan Media Kominfo
+# 📰 SIMPLE Frontend — Sistem Informasi Pendaftaran dan Penilaian Kelayakan Media
 
-SIFOKAM adalah aplikasi web berbasis **Next.js** yang dirancang untuk memfasilitasi pengajuan, pengelolaan, dan evaluasi laporan media oleh Pelapor serta verifikasi oleh Admin Kominfo Kabupaten Banjar.
+SIMPLE adalah aplikasi web berbasis **Next.js** yang dirancang untuk memfasilitasi pendaftaran dan penilaian kelayakan media oleh Pelapor serta verifikasi oleh Admin Kominfo Kabupaten Banjar.
 
 ---
 

@@ -44,7 +44,7 @@ export function ReportHints({
           ...COPY[kind],
           side: "bottom",
           align: "start",
-          popoverClass: "sifokam-tour",
+          popoverClass: "simple-tour",
         },
       })),
       buttonText: "Tutup",

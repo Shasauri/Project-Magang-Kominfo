@@ -1,6 +1,6 @@
-# 📋 Rangkuman Project — SIFOKAM Frontend
+# 📋 Rangkuman Project — SIMPLE Frontend
 
-**SIFOKAM** (Sistem Informasi Laporan Media Kominfo) adalah aplikasi web berbasis **Next.js** yang digunakan untuk pengelolaan dan pengajuan laporan evaluasi media oleh Pelapor kepada pihak Kominfo.
+**SIMPLE** (Sistem Informasi Pendaftaran dan Penilaian Kelayakan Media) adalah aplikasi web berbasis **Next.js** yang digunakan untuk pendaftaran dan penilaian kelayakan media oleh Pelapor kepada pihak Kominfo.
 
 ---
 

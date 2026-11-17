@@ -74,12 +74,12 @@ export default function ForgotPasswordPage() {
             <div className="flex items-center gap-3">
               <div className="relative h-12 w-16 shrink-0"><Image src="/images/Logo.png" alt="Logo Komdigi" fill className="object-contain object-left" /></div>
               <div className="h-10 w-px bg-slate-200" />
-              <div className="flex flex-col text-slate-800"><span className="text-sm font-bold tracking-wide">SIFOKAM</span><span className="text-[10px] leading-tight text-slate-500">SISTEM FORM <br /> KATEGORI MEDIA</span></div>
+              <div className="flex flex-col text-slate-800"><span className="text-sm font-bold tracking-wide">SIMPLE</span><span className="text-[10px] leading-tight text-slate-500">SISTEM INFORMASI <br /> PENDAFTARAN DAN PENILAIAN KELAYAKAN MEDIA</span></div>
             </div>
           </div>
           <div className="flex flex-1 flex-col justify-center pb-45">
             <div className="max-w-lg rounded-2xl border border-white/20 bg-slate-900/60 p-8 text-white shadow-xl backdrop-blur-md">
-              <h1 className="mb-4 text-3xl font-bold leading-tight md:text-4xl">Sistem Informasi Form Kategori Media</h1>
+              <h1 className="mb-4 text-3xl font-bold leading-tight md:text-4xl">Sistem Informasi Pendaftaran dan Penilaian Kelayakan Media</h1>
               <p className="text-lg text-slate-200">Portal akses resmi untuk pengelolaan data dan pengajuan kategori media digital institusi.</p>
             </div>
           </div>

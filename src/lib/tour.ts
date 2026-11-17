@@ -3,8 +3,8 @@ import type { DriveStep } from "driver.js";
 export type TourRole = "admin" | "pelapor";
 
 export const TOUR_KEYS: Record<TourRole, string> = {
-  admin: "sifokam:tour:admin:v1",
-  pelapor: "sifokam:tour:pelapor:v1",
+  admin: "simple:tour:admin:v1",
+  pelapor: "simple:tour:pelapor:v1",
 };
 
 // Elemen yang baru ada setelah data dashboard selesai dimuat.
