@@ -9,6 +9,15 @@ Base URL: `http://localhost/api`
 Semua endpoint yang memerlukan autentikasi menggunakan **Bearer Token** (JWT).
 Header: `Authorization: Bearer <token>`
 
+### Akun Admin Default (hasil seeding)
+
+| Field | Nilai |
+|---|---|
+| Email | `kominfomtpadmin@gmail.com` |
+| Password | nilai `ADMIN_DEFAULT_PASSWORD` di `.env` (default `admin123` bila kosong) |
+
+> Ganti password admin setelah login pertama. Password diatur oleh `AdminUserSeeder`.
+
 ---
 
 ## CAPTCHA Flow
@@ -1147,10 +1156,32 @@ Authorization: Bearer <token>
 }
 ```
 
+#### Profil Admin
+
+Sama seperti fitur profil pelapor, tersedia juga di namespace admin:
+
+| Method | Endpoint | Keterangan |
+|---|---|---|
+| GET | `/api/admin/profile` | Lihat profil admin yang login |
+| PUT | `/api/admin/profile` | Update nama / avatar (`name`, `avatar`, `delete_avatar`) |
+| PUT | `/api/admin/profile/password` | Ganti password (`current_password`, `password`, `password_confirmation`) |
+| POST | `/api/admin/profile/avatar` | Upload avatar (`avatar`, multipart, max 2MB) |
+| DELETE | `/api/admin/profile/avatar` | Hapus avatar |
+
+**Ganti password admin — Request Body:**
+```json
+{
+  "current_password": "admin123",
+  "password": "passwordBaru123",
+  "password_confirmation": "passwordBaru123"
+}
+```
+
+> Endpoint admin ini memakai logic yang sama dengan `/api/auth/me/password`, hanya berbeda namespace agar sesuai aplikasi admin.
+
 #### List Semua User Pelapor
 ```
 GET /api/admin/users?search=budi&status=aktif&page=1&per_page=20
-Authorization: Bearer <token>
 ```
 | Query Param | Type | Keterangan |
 |---|---|---|

@@ -84,7 +84,7 @@ export default function ProfilPage() {
       if (!token) return;
 
       try {
-        const res = await fetch(`/api/backend/auth/me`, {
+        const res = await fetch(`/api/backend/admin/profile`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
 
@@ -122,7 +122,7 @@ export default function ProfilPage() {
     formData.append("avatar", file);
 
     try {
-      const res = await fetch(`/api/backend/auth/me/avatar`, {
+      const res = await fetch(`/api/backend/admin/profile/avatar`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
         body: formData
@@ -152,7 +152,7 @@ export default function ProfilPage() {
     const token = getCookie("token");
 
     try {
-      const res = await fetch(`/api/backend/auth/me/avatar`, {
+      const res = await fetch(`/api/backend/admin/profile/avatar`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -182,7 +182,7 @@ export default function ProfilPage() {
     const token = getCookie("token");
 
     try {
-      const res = await fetch(`/api/backend/auth/me`, {
+      const res = await fetch(`/api/backend/admin/profile`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -223,7 +223,7 @@ export default function ProfilPage() {
     const token = getCookie("token");
     
     try {
-      const res = await fetch(`/api/backend/auth/me/password`, {
+      const res = await fetch(`/api/backend/admin/profile/password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
