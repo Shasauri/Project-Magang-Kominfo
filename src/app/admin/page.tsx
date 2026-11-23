@@ -869,8 +869,8 @@ export default function DashboardPage() {
                         {modalLinks.length > 0 ? modalLinks.map((link) => (
                           <div key={link.id} className="h-10 min-w-0 rounded-md border border-slate-200 bg-slate-50 px-3 py-2">
                             {isSafeExternalUrl(link.answer_value) ? (
-                              <a href={link.answer_value} target="_blank" rel="noopener noreferrer" className="block w-full truncate text-xs font-medium text-slate-700 hover:text-blue-600 hover:underline">
-                                {link.answer_value}
+                              <a href={link.answer_value} target="_blank" rel="noopener noreferrer" title={link.answer_value} className="block w-full truncate text-xs font-medium text-slate-700 hover:text-blue-600 hover:underline">
+                                {link.question?.question_text || link.answer_value}
                               </a>
                             ) : (
                               <span className="block w-full truncate text-xs font-medium text-slate-500">
