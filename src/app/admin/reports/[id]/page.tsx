@@ -426,7 +426,7 @@ export default function DetailLaporanAdminPage() {
       {/* ================= MODAL PREVIEW PDF ================= */}
       {selectedPdfUrl && (
         <Dialog open={Boolean(selectedPdfUrl)} onOpenChange={(open) => !open && closePdfModal()}>
-          <DialogContent className="h-[calc(100dvh-2rem)] max-w-5xl overflow-hidden rounded-2xl p-0 md:h-[calc(100dvh-4rem)]">
+          <DialogContent className="grid-rows-[auto_minmax(0,1fr)] h-[calc(100dvh-2rem)] gap-0 overflow-hidden rounded-2xl p-0 md:h-[calc(100dvh-4rem)] sm:max-w-7xl">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-6 sm:py-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -440,7 +440,7 @@ export default function DetailLaporanAdminPage() {
             </div>
             <div className="min-h-0 flex-1 bg-slate-100/50 p-2 md:p-4">
               <iframe 
-                src={`${selectedPdfUrl}#toolbar=0`} 
+                src={`${selectedPdfUrl}#toolbar=0&zoom=page-width`} 
                 className="w-full h-full rounded-xl border border-slate-200 shadow-sm bg-white"
                 title="PDF Preview"
               />
