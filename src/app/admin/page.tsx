@@ -26,8 +26,16 @@ import {
 } from "@/components/ui/select";
 import { Download, Pencil } from "lucide-react";
 import { isSafeExternalUrl } from "@/app/lib/security";
+import { isSocialMediaLinkQuestion, parseSocialMediaAnswer } from "@/app/lib/social-media";
 
 const getCookie = (name: string) => name === "token" ? "session" : null;
+
+type PrintAnswer = {
+  id?: number | string;
+  answer_type?: string;
+  answer_value?: string | null;
+  question?: { question_text?: string };
+};
 
 const getStoredToken = () => "session";
 
@@ -520,7 +528,23 @@ export default function DashboardPage() {
     if (mediaNameAns) modalMediaName = mediaNameAns.answer_value;
 
     modalFiles = printReportData.answers.filter((a: any) => a.answer_type === 'file' && a.answer_value);
-    modalLinks = printReportData.answers.filter((a: any) => a.answer_type === 'url' && a.answer_value);
+
+    const urlAnswers = printReportData.answers.filter((a: PrintAnswer) =>
+      a.answer_type === 'url' && a.answer_value && !isSocialMediaLinkQuestion(a.question)
+    );
+    const socialAnswer = printReportData.answers.find((a: PrintAnswer) =>
+      isSocialMediaLinkQuestion(a.question) &&
+      typeof a.answer_value === "string" &&
+      !a.answer_value.trim().toLowerCase().startsWith("tidak")
+    );
+    const socialLinks = parseSocialMediaAnswer(socialAnswer?.answer_value)
+      .filter((link) => isSafeExternalUrl(link.url))
+      .map((link, index) => ({
+        id: `social-${socialAnswer?.id ?? "answer"}-${index}`,
+        answer_value: link.url,
+      }));
+
+    modalLinks = [...urlAnswers, ...socialLinks];
   }
 
   return (

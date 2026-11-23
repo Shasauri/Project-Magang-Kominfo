@@ -8,6 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { SocialMediaLinksField } from "@/components/social-media-links";
+import {
+  getCompleteSocialMediaAnswer,
+  hasCompleteSocialMediaAnswer,
+  isSocialMediaLinkQuestion,
+} from "@/app/lib/social-media";
 
 // Helper Token
 const getCookie = (name: string) => name === "token" ? "session" : null;
@@ -32,9 +38,6 @@ const isNegativeAnswer = (value: string | undefined) =>
       (normalizedValue.startsWith("tidak") || normalizedValue === "ada tanpa ukw")
     );
   })();
-
-const isSocialMediaLinkQuestion = (question: { question_text?: string }) =>
-  question.question_text?.toLowerCase().includes("link sosial media");
 
 const isFollowerQuestion = (question: { question_text?: string }) => {
   const text = question.question_text?.toLowerCase() || "";
@@ -65,6 +68,27 @@ const isRequiredQuestion = (question: { id: number; question_text?: string; is_m
     questionText.includes(INAPROC_LINK_QUESTION) ||
     questionText.includes(SPT_PROOF_QUESTION)
   );
+};
+
+const buildInitialAnswers = (answers: any[] = [], questionList: any[] = []) => {
+  const initialAnswers: any = {};
+
+  answers.forEach((ans: any) => {
+    const questionText = questionList.find((question: any) => question.id === ans.question_id)?.question_text;
+    const isSocialMediaLink = isSocialMediaLinkQuestion({ question_text: questionText });
+    const isNoAnswer = isNegativeAnswer(ans.answer_value);
+
+    initialAnswers[ans.question_id] = {
+      value: isSocialMediaLink && (isNoAnswer || ans.answer_value?.trim().toLowerCase() === "ya")
+        ? ""
+        : ans.answer_value || "",
+      type: isSocialMediaLink ? "text" : ans.answer_type,
+      selectedOption: isSocialMediaLink ? (isNoAnswer ? ans.answer_value : "Ya") : undefined,
+      fileName: ans.answer_type === 'file' && ans.answer_value ? ans.answer_value.split('/').pop() : ''
+    };
+  });
+
+  return initialAnswers;
 };
 
 export default function DetailEditLaporanPage() {
@@ -124,25 +148,7 @@ export default function DetailEditLaporanPage() {
       setQuestions(qData);
 
       // Format data jawaban ke state form
-      const initialAnswers: any = {};
-      if (report.answers && Array.isArray(report.answers)) {
-        report.answers.forEach((ans: any) => {
-          const questionText = qData.find((question: any) => question.id === ans.question_id)?.question_text;
-          const isSocialMediaLink = isSocialMediaLinkQuestion({ question_text: questionText });
-          const isNoAnswer = isNegativeAnswer(ans.answer_value);
-          initialAnswers[ans.question_id] = {
-            value: isSocialMediaLink && (isNoAnswer || ans.answer_value?.trim().toLowerCase() === "ya")
-              ? ""
-              : ans.answer_value || "",
-            type: ans.answer_type,
-            selectedOption: isSocialMediaLink
-              ? (isNoAnswer ? ans.answer_value : "Ya")
-              : undefined,
-            fileName: ans.answer_type === 'file' && ans.answer_value ? ans.answer_value.split('/').pop() : ''
-          };
-        });
-      }
-      setAnswersForm(initialAnswers);
+      setAnswersForm(buildInitialAnswers(report.answers, qData));
       setClearedAnswerIds(new Set());
       setIsRevisionConfirmed(report.is_revised === true);
 
@@ -186,6 +192,17 @@ export default function DetailEditLaporanPage() {
     setClearedAnswerIds(prev => new Set(prev).add(nextQuestion.id));
   };
 
+  const handleSocialMediaLinksChange = (qId: number, value: string) => {
+    setAnswersForm(prev => ({
+      ...prev,
+      [qId]: {
+        value,
+        type: "text",
+        selectedOption: prev[qId]?.selectedOption ?? "Ya",
+      },
+    }));
+  };
+
   const handleOptionChange = (qId: number, value: string, questionText: string) => {
     const questionIndex = questions.findIndex((question) => question.id === qId);
     const nextQuestion = questions[questionIndex + 1];
@@ -201,7 +218,7 @@ export default function DetailEditLaporanPage() {
         ...prev,
         [qId]: {
           value: isSocialMediaLinkQuestion({ question_text: questionText }) ? currentAnswer?.value || "" : value,
-          type: determineAnswerType(questionText),
+          type: isSocialMediaLinkQuestion({ question_text: questionText }) ? "text" : determineAnswerType(questionText),
           selectedOption: value,
         },
       };
@@ -296,15 +313,7 @@ export default function DetailEditLaporanPage() {
   const handleCancelEdit = () => {
     setIsEditing(false);
     // Kembalikan data dari backup reportData asli
-    const initialAnswers: any = {};
-    reportData.answers.forEach((ans: any) => {
-      initialAnswers[ans.question_id] = {
-        value: ans.answer_value,
-        type: ans.answer_type,
-        fileName: ans.answer_type === 'file' && ans.answer_value ? ans.answer_value.split('/').pop() : ''
-      };
-    });
-    setAnswersForm(initialAnswers);
+    setAnswersForm(buildInitialAnswers(reportData.answers, questions));
     setClearedAnswerIds(new Set());
   };
 
@@ -312,18 +321,19 @@ export default function DetailEditLaporanPage() {
   const handleSaveChanges = async () => {
     const unansweredQuestions = visibleQuestions.filter((question) => {
       const answer = answersForm[question.id];
-      const answerValue = isSocialMediaLinkQuestion(question) && isNegativeAnswer(answer?.selectedOption)
-        ? answer.selectedOption
-        : answer?.value;
       const questionIndex = questions.findIndex((item) => item.id === question.id);
       const isConditionallyVisible = questionIndex > 0 &&
         isSkippedWhenPreviousAnswerIsNo(question, questions[questionIndex - 1]);
 
-      return (
-        (isRequiredQuestion(question) || isConditionallyVisible) &&
-        !answerValue?.trim() &&
-        !answer?.fileName
-      );
+      if (!isRequiredQuestion(question) && !isConditionallyVisible) return false;
+      if (answer?.fileName) return false;
+
+      if (isSocialMediaLinkQuestion(question)) {
+        if (isNegativeAnswer(answer?.selectedOption)) return false;
+        return !(answer?.selectedOption === "Ya" && hasCompleteSocialMediaAnswer(answer?.value));
+      }
+
+      return !answer?.value?.trim();
     });
 
     if (unansweredQuestions.length > 0) {
@@ -346,6 +356,28 @@ export default function DetailEditLaporanPage() {
     // Susun jawaban (hanya ambil yang terisi)
     const formattedAnswers: any[] = [];
     Object.entries(answersForm).forEach(([qId, data]) => {
+      const question = questions.find((item) => item.id === Number(qId));
+
+      if (question && isSocialMediaLinkQuestion(question)) {
+        if (isNegativeAnswer(data.selectedOption)) {
+          formattedAnswers.push({
+            question_id: Number(qId),
+            answer_value: data.selectedOption,
+            answer_type: "text",
+          });
+        } else {
+          const socialAnswer = getCompleteSocialMediaAnswer(data.value);
+          if (socialAnswer) {
+            formattedAnswers.push({
+              question_id: Number(qId),
+              answer_value: socialAnswer,
+              answer_type: "text",
+            });
+          }
+        }
+        return;
+      }
+
       const answerValue = data.selectedOption && isNegativeAnswer(data.selectedOption)
         ? data.selectedOption
         : data.value;
@@ -432,14 +464,24 @@ export default function DetailEditLaporanPage() {
     fetchData(); // Refresh setelah notifikasi ditutup agar modal tetap terlihat.
   };
 
-  const answeredCount = Object.values(answersForm).filter(a =>
-    a && (a.value !== "" || Boolean(a.selectedOption))
-  ).length;
   const visibleQuestions = questions.filter((question, index) => {
     if (index === 0 || !isSkippedWhenPreviousAnswerIsNo(question, questions[index - 1])) return true;
     const previousAnswer = answersForm[questions[index - 1].id];
     return !isNegativeAnswer(previousAnswer?.selectedOption || previousAnswer?.value);
   });
+  const isQuestionAnswered = (qId: number) => {
+    const ans = answersForm[qId];
+    if (!ans) return false;
+
+    const question = questions.find((item) => item.id === qId);
+    if (question && isSocialMediaLinkQuestion(question)) {
+      return isNegativeAnswer(ans.selectedOption) ||
+        (ans.selectedOption === "Ya" && hasCompleteSocialMediaAnswer(ans.value));
+    }
+
+    return ans.value !== "" || Boolean(ans.selectedOption);
+  };
+  const answeredCount = visibleQuestions.filter((question) => isQuestionAnswered(question.id)).length;
   const totalQuestions = visibleQuestions.length;
   const isPending = reportData.status === "pending";
 
@@ -559,10 +601,7 @@ export default function DetailEditLaporanPage() {
             const hasOptions = q.scoring_rules && q.scoring_rules.length > 0;
             const ansState = answersForm[q.id];
             const isUploading = uploadingFiles[q.id];
-            const showTextInput = qType !== "file" && (
-              !hasOptions ||
-              (isSocialMediaLinkQuestion(q) && !isNegativeAnswer(ansState?.selectedOption))
-            );
+            const showTextInput = qType !== "file" && !hasOptions && !isSocialMediaLinkQuestion(q);
 
             return (
               <Card key={q.id} className={`rounded-3xl border p-6 ${isEditing ? 'border-blue-100 ring-1 ring-blue-50' : 'border-slate-100'} transition-all`}>
@@ -592,6 +631,15 @@ export default function DetailEditLaporanPage() {
                         </label>
                       ))}
                     </div>
+                  )}
+
+                  {/* Tipe: Link Sosial Media Multi-platform */}
+                  {isSocialMediaLinkQuestion(q) && ansState?.selectedOption === "Ya" && (
+                    <SocialMediaLinksField
+                      value={ansState?.value || ""}
+                      readOnly={!isEditing}
+                      onChange={(value) => handleSocialMediaLinksChange(q.id, value)}
+                    />
                   )}
 
                   {/* Tipe: File Upload */}
@@ -707,7 +755,7 @@ export default function DetailEditLaporanPage() {
           
           <div className="grid grid-cols-5 gap-3">
             {visibleQuestions.map((q, idx) => {
-              const isAnswered = answersForm[q.id] && answersForm[q.id].value !== "";
+              const isAnswered = isQuestionAnswered(q.id);
               return (
                 <div 
                   key={q.id}

@@ -7,6 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { isSafeExternalUrl } from "@/app/lib/security";
+import {
+  getSocialMediaLinkLabel,
+  isSocialMediaLinkQuestion,
+  parseSocialMediaAnswer,
+} from "@/app/lib/social-media";
 
 const getCookie = (name: string) => name === "token" ? "session" : null;
 
@@ -229,8 +234,9 @@ export default function DetailLaporanAdminPage() {
             const qId = qData.id || ansItem.question_id;
             const isFile = ansItem.answer_type === "file";
             const isUrl = ansItem.answer_type === "url";
-            const isSocialMediaLink = qData.question_text?.toLowerCase().includes("link sosial media");
+            const isSocialMediaLink = isSocialMediaLinkQuestion(qData);
             const isSocialMediaNo = ansItem.answer_value?.trim().toLowerCase().startsWith("tidak");
+            const socialLinks = isSocialMediaLink ? parseSocialMediaAnswer(ansItem.answer_value) : [];
             const isPdfLoading = loadingPdfId === qId;
             const scoringRules = qData.scoring_rules || [];
             const hasScoringRules = scoringRules.length > 0;
@@ -252,20 +258,34 @@ export default function DetailLaporanAdminPage() {
                       <p>
                         Pilihan: <span className="font-semibold">{isSocialMediaNo ? "Tidak" : "Ya"}</span>
                       </p>
-                      {!isSocialMediaNo && ansItem.answer_value && (
-                        isSafeExternalUrl(ansItem.answer_value) ? (
-                          <a
-                            href={ansItem.answer_value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block break-all font-medium text-blue-600 hover:underline"
-                          >
-                            {ansItem.answer_value}
-                          </a>
-                        ) : (
-                          <p className="font-medium text-slate-500">Tautan tidak valid</p>
-                        )
+                      {!isSocialMediaNo && socialLinks.length > 0 && (
+                        <div className="space-y-1.5">
+                          {socialLinks.map((link) => (
+                            <div key={link.key} className="break-words">
+                              <span className="font-semibold">{getSocialMediaLinkLabel(link)}: </span>
+                              {isSafeExternalUrl(link.url) ? (
+                                <a
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="font-medium text-blue-600 hover:underline"
+                                >
+                                  {link.url}
+                                </a>
+                              ) : (
+                                <span className="font-medium text-slate-500">
+                                  {link.url || "Tautan tidak valid"}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       )}
+                      {!isSocialMediaNo && socialLinks.length === 0 &&
+                        ansItem.answer_value?.trim().toLowerCase() !== "ya" &&
+                        ansItem.answer_value && (
+                          <p className="break-words font-medium text-slate-500">{ansItem.answer_value}</p>
+                        )}
                     </div>
                   ) : hasScoringRules ? (
                     <div className="divide-y divide-slate-100">

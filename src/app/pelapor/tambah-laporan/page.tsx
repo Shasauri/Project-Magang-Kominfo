@@ -9,6 +9,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SocialMediaLinksField } from "@/components/social-media-links";
+import {
+  getCompleteSocialMediaAnswer,
+  hasCompleteSocialMediaAnswer,
+  isSocialMediaLinkQuestion,
+} from "@/app/lib/social-media";
 
 const getCookie = (name: string) => name === "token" ? "session" : null;
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
@@ -29,9 +35,6 @@ const isNegativeAnswer = (value: string | undefined) => {
   const normalizedValue = value.trim().toLowerCase();
   return normalizedValue.startsWith("tidak") || normalizedValue === "ada tanpa ukw";
 };
-
-const isSocialMediaLinkQuestion = (question: { question_text?: string }) =>
-  question.question_text?.toLowerCase().includes("link sosial media");
 
 const isFollowerQuestion = (question: { question_text?: string }) => {
   const text = question.question_text?.toLowerCase() || "";
@@ -211,6 +214,17 @@ function TambahLaporanContent() {
     });
   };
 
+  const handleSocialMediaLinksChange = (qId: number, value: string) => {
+    setAnswers(prev => ({
+      ...prev,
+      [qId]: {
+        value,
+        type: "text",
+        selectedOption: prev[qId]?.selectedOption ?? "Ya",
+      },
+    }));
+  };
+
   const handleOptionChange = (qId: number, value: string, questionText: string) => {
     setAnswers(prev => {
       const currentAnswer = prev[qId];
@@ -224,7 +238,7 @@ function TambahLaporanContent() {
         ...prev,
         [qId]: {
           value: isSocialMediaLinkQuestion({ question_text: questionText }) ? currentAnswer?.value || "" : value,
-          type: determineAnswerType(questionText),
+          type: isSocialMediaLinkQuestion({ question_text: questionText }) ? "text" : determineAnswerType(questionText),
           selectedOption: value,
         },
       };
@@ -276,13 +290,9 @@ function TambahLaporanContent() {
     setSubmitNotification(null);
     setSubmitErrorMessage("");
 
-    const unansweredMandatory = visibleQuestions.filter((q) => {
-      const answer = answers[q.id];
-      const answerValue = isSocialMediaLinkQuestion(q) && isNegativeAnswer(answer?.selectedOption)
-        ? answer.selectedOption
-        : answer?.value;
-      return isRequiredQuestion(q) && !answerValue?.trim() && !pendingFiles[q.id];
-    });
+    const unansweredMandatory = visibleQuestions.filter(
+      (q) => isRequiredQuestion(q) && !isQuestionAnswered(q.id)
+    );
     
     if (unansweredMandatory.length > 0) {
       const unansweredNumbers = unansweredMandatory.map(
@@ -303,17 +313,30 @@ function TambahLaporanContent() {
     const token = getCookie("token");
     const baseURL = "/api/backend";
     
-    const formattedAnswers = Object.entries(answers)
-      .map(([qId, data]) => ({
-        question_id: Number(qId),
-        answer_value: data.selectedOption && isNegativeAnswer(data.selectedOption)
-          ? data.selectedOption
-          : data.value,
-        answer_type: data.selectedOption && isNegativeAnswer(data.selectedOption)
-          ? "text"
-          : data.type
-      }))
-      .filter((data) => data.answer_type !== "file" && data.answer_value.trim());
+    const formattedAnswers = Object.entries(answers).flatMap(([qId, data]) => {
+      const question = questions.find((item) => item.id === Number(qId));
+
+      if (question && isSocialMediaLinkQuestion(question)) {
+        if (isNegativeAnswer(data.selectedOption)) {
+          return [{ question_id: Number(qId), answer_value: data.selectedOption, answer_type: "text" }];
+        }
+
+        const socialAnswer = getCompleteSocialMediaAnswer(data.value);
+        return socialAnswer
+          ? [{ question_id: Number(qId), answer_value: socialAnswer, answer_type: "text" }]
+          : [];
+      }
+
+      const answerValue = data.selectedOption && isNegativeAnswer(data.selectedOption)
+        ? data.selectedOption
+        : data.value;
+      const answerType = data.selectedOption && isNegativeAnswer(data.selectedOption)
+        ? "text"
+        : data.type;
+
+      if (answerType === "file" || !answerValue?.trim()) return [];
+      return [{ question_id: Number(qId), answer_value: answerValue, answer_type: answerType }];
+    });
 
     try {
       // Buat draft lebih dulu agar backend memiliki reportId untuk upload file.
@@ -383,6 +406,13 @@ function TambahLaporanContent() {
     const ans = answers[qId];
     if (pendingFiles[qId]) return true;
     if (!ans) return false;
+
+    const question = questions.find((item) => item.id === qId);
+    if (question && isSocialMediaLinkQuestion(question)) {
+      if (isNegativeAnswer(ans.selectedOption)) return true;
+      return ans.selectedOption === "Ya" && hasCompleteSocialMediaAnswer(ans.value);
+    }
+
     if (ans.selectedOption && isNegativeAnswer(ans.selectedOption)) return true;
     if (ans.type === "file") return Boolean(ans.fileName || (ans.value && ans.value.trim() !== ""));
     return Boolean(ans.value && ans.value.trim() !== "");
@@ -489,10 +519,7 @@ function TambahLaporanContent() {
                 const ans = answers[q.id];
                 const isUploading = uploadingFiles[q.id];
                 const isFileLocked = qType === "file" && isFileQuestionLocked(q);
-                const showTextInput = qType !== "file" && (
-                  !hasOptions ||
-                  (isSocialMediaLinkQuestion(q) && !isNegativeAnswer(ans?.selectedOption))
-                );
+                const showTextInput = qType !== "file" && !hasOptions && !isSocialMediaLinkQuestion(q);
 
                 return (
                   <Card key={q.id} className="rounded-3xl border border-slate-100 p-6">
@@ -521,6 +548,14 @@ function TambahLaporanContent() {
                             </label>
                           ))}
                         </RadioGroup>
+                      )}
+
+                      {/* Tipe: Link Sosial Media Multi-platform */}
+                      {isSocialMediaLinkQuestion(q) && ans?.selectedOption === "Ya" && (
+                        <SocialMediaLinksField
+                          value={ans?.value || ""}
+                          onChange={(value) => handleSocialMediaLinksChange(q.id, value)}
+                        />
                       )}
 
                       {/* Tipe: File Upload */}
